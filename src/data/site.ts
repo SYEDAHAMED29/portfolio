@@ -7,7 +7,7 @@ export const siteData = {
   email: "syeddev29@gmail.com",
   linkedin: "https://www.linkedin.com/in/syed-aashiq-ahamed-6180a9187/",
   github: "https://github.com/SyedAHAMED29",
-  resumePath: "/public/Resume-SyedAashiqAhamed.pdf",
+  resumePath: "/Resume-SyedAashiqAhamed.pdf",
   status: "Open to opportunities",
 
   hero: {
