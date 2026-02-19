@@ -4,7 +4,7 @@ export const siteData = {
   company: "Beamer × Userflow",
   title: "SDE-1",
   location: "Coimbatore, India",
-  email: "syeddev29@gmail.com",
+  email: "hello@syedahamed.in",
   linkedin: "https://www.linkedin.com/in/syed-aashiq-ahamed-6180a9187/",
   github: "https://github.com/SyedAHAMED29",
   resumePath: "/Resume-SyedAashiqAhamed.pdf",
