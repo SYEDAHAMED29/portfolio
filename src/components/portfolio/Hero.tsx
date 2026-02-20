@@ -2,8 +2,10 @@ import { motion } from "framer-motion";
 import { siteData } from "@/data/site";
 import { Circle } from "lucide-react";
 import CodeCard from "./CodeCard";
+import { usePostHog } from "@posthog/react";
 
 const Hero = () => {
+  const posthog = usePostHog();
   return (
     <section
       className="min-h-screen flex items-center section-padding pt-28 md:pt-20"
@@ -35,6 +37,11 @@ const Hero = () => {
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-foreground underline decoration-border hover:decoration-foreground underline-offset-4"
+                  onClick={() =>
+                    posthog.capture("Beamer_Company_Clicked", {
+                      button_name: "Beamer",
+                    })
+                  }
                 >
                   Beamer
                 </a>{" "}
@@ -44,6 +51,11 @@ const Hero = () => {
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-foreground underline decoration-border hover:decoration-foreground underline-offset-4"
+                  onClick={() =>
+                    posthog.capture("Userflow_Company_Clicked", {
+                      button_name: "Userflow",
+                    })
+                  }
                 >
                   Userflow
                 </a>
