@@ -6,18 +6,28 @@ type views = "Hero" | "About" | "Experience" | "Skills" | "Contact";
 export const useSectionView = (id: views) => {
   useEffect(() => {
     const el = document.getElementById(id);
-    if (!el) return;
+    if (!el) {
+      console.warn("[useSectionView] missing element:", id);
+      return;
+    }
 
     let fired = false;
 
     const obs = new IntersectionObserver(
       ([entry]) => {
-        if (!fired && entry.isIntersecting && entry.intersectionRatio >= 0.35) {
+        if (fired) return;
+        if (entry.isIntersecting) {
           fired = true;
           track("section_view", { section: id });
+          obs.disconnect();
         }
       },
-      { threshold: [0.35] },
+      {
+        // this makes it trigger earlier and more reliably
+        root: null,
+        threshold: 0.01,
+        rootMargin: "-20% 0px -55% 0px",
+      },
     );
 
     obs.observe(el);
