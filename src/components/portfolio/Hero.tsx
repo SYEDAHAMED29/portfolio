@@ -2,11 +2,8 @@ import { motion } from "framer-motion";
 import { siteData } from "@/data/site";
 import { Circle } from "lucide-react";
 import CodeCard from "./CodeCard";
-import { track, trackOutbound } from "@/lib/analytics";
-import { useSectionView } from "@/hooks/useSectionView";
 
 const Hero = () => {
-  useSectionView("hero");
   return (
     <section
       className="min-h-screen flex items-center section-padding pt-28 md:pt-20"
@@ -38,9 +35,6 @@ const Hero = () => {
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-foreground underline decoration-border hover:decoration-foreground underline-offset-4"
-                  onClick={() =>
-                    trackOutbound("company_beamer", siteData.companies.beamer)
-                  }
                 >
                   Beamer
                 </a>{" "}
@@ -50,12 +44,6 @@ const Hero = () => {
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-foreground underline decoration-border hover:decoration-foreground underline-offset-4"
-                  onClick={() =>
-                    trackOutbound(
-                      "company_userflow",
-                      siteData.companies.userflow,
-                    )
-                  }
                 >
                   Userflow
                 </a>
@@ -81,19 +69,12 @@ const Hero = () => {
               <a
                 href="#experience"
                 className="inline-flex items-center font-medium text-base bg-primary text-primary-foreground px-5 py-2.5 rounded-md hover:opacity-90 transition-opacity"
-                onClick={() =>
-                  track("cta_click", {
-                    cta: "view_experience",
-                    location: "hero",
-                  })
-                }
               >
                 View Experience
               </a>
               <a
                 href={`mailto:${siteData.email}`}
                 className="inline-flex items-center font-medium text-base border border-border text-foreground px-5 py-2.5 rounded-md hover:bg-secondary transition-colors"
-                onClick={() => track("email_click", { location: "hero" })}
               >
                 Email me
               </a>

@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { siteData } from "@/data/site";
 import { Github, Linkedin, Menu, X } from "lucide-react";
-import { track, trackOutbound } from "@/lib/analytics";
 
 const Navbar = () => {
   const [scrolled, setScrolled] = useState(false);
@@ -51,7 +50,6 @@ const Navbar = () => {
               rel="noopener noreferrer"
               aria-label="GitHub"
               className="text-muted-foreground hover:text-foreground transition-colors"
-              onClick={() => trackOutbound("github", siteData.github)}
             >
               <Github size={18} />
             </a>
@@ -61,7 +59,6 @@ const Navbar = () => {
               rel="noopener noreferrer"
               aria-label="LinkedIn"
               className="text-muted-foreground hover:text-foreground transition-colors"
-              onClick={() => trackOutbound("linkedin", siteData.linkedin)}
             >
               <Linkedin size={18} />
             </a>
@@ -70,7 +67,6 @@ const Navbar = () => {
               target="_blank"
               rel="noopener noreferrer"
               className="text-base font-medium bg-primary text-primary-foreground px-3 py-1.5 rounded-md hover:opacity-90 transition-opacity"
-              onClick={() => track("resume_click", { location: "navbar" })}
             >
               Resume
             </a>
