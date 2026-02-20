@@ -98,7 +98,7 @@ const EXPERIENCE: ExperienceItem[] = [
 ];
 
 const Experience = () => {
-  useSectionView("Experience");
+  useSectionView("experience");
   return (
     <section id="experience" className="section-padding">
       <div className="container-narrow">

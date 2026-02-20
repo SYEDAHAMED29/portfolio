@@ -10,7 +10,7 @@ const iconMap: Record<string, React.ReactNode> = {
 };
 
 const Skills = () => {
-  useSectionView("Skills");
+  useSectionView("skills");
   return (
     <section id="skills" className="section-padding bg-card/50">
       <div className="container-narrow">

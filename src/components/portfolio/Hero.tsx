@@ -6,7 +6,7 @@ import { track, trackOutbound } from "@/lib/analytics";
 import { useSectionView } from "@/hooks/useSectionView";
 
 const Hero = () => {
-  useSectionView("Hero");
+  useSectionView("hero");
   return (
     <section
       className="min-h-screen flex items-center section-padding pt-28 md:pt-20"

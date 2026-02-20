@@ -11,7 +11,7 @@ const ABOUT_IMAGES = [
 
 const About = () => {
   const [active, setActive] = useState(0);
-  useSectionView("About");
+  useSectionView("about");
 
   useEffect(() => {
     const id = window.setInterval(() => {

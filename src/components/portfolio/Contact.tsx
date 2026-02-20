@@ -5,7 +5,7 @@ import { track } from "@/lib/analytics";
 import { useSectionView } from "@/hooks/useSectionView";
 
 const Contact = () => {
-  useSectionView("Contact");
+  useSectionView("contact");
   return (
     <section id="contact" className="section-padding">
       <div className="container-narrow">

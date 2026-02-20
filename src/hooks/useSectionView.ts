@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { track } from "@/lib/analytics";
 
-type views = "Hero" | "About" | "Experience" | "Skills" | "Contact";
+type views = "hero" | "about" | "experience" | "skills" | "contact";
 
 export const useSectionView = (id: views) => {
   useEffect(() => {
@@ -18,6 +18,7 @@ export const useSectionView = (id: views) => {
         if (fired) return;
         if (entry.isIntersecting) {
           fired = true;
+          console.log("firing");
           track("section_view", { section: id });
           obs.disconnect();
         }
