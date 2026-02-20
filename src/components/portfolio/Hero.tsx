@@ -3,6 +3,7 @@ import { siteData } from "@/data/site";
 import { Circle } from "lucide-react";
 import CodeCard from "./CodeCard";
 import { usePostHog } from "@posthog/react";
+import { track } from "@/lib/analytics";
 
 const Hero = () => {
   const posthog = usePostHog();
@@ -37,11 +38,7 @@ const Hero = () => {
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-foreground underline decoration-border hover:decoration-foreground underline-offset-4"
-                  onClick={() =>
-                    posthog.capture("Beamer_Company_Clicked", {
-                      button_name: "Beamer",
-                    })
-                  }
+                  onClick={() => posthog.capture("Beamer_Company_Clicked")}
                 >
                   Beamer
                 </a>{" "}
@@ -51,11 +48,7 @@ const Hero = () => {
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-foreground underline decoration-border hover:decoration-foreground underline-offset-4"
-                  onClick={() =>
-                    posthog.capture("Userflow_Company_Clicked", {
-                      button_name: "Userflow",
-                    })
-                  }
+                  onClick={() => posthog.capture("Userflow_Company_Clicked")}
                 >
                   Userflow
                 </a>
@@ -87,6 +80,7 @@ const Hero = () => {
               <a
                 href={`mailto:${siteData.email}`}
                 className="inline-flex items-center font-medium text-base border border-border text-foreground px-5 py-2.5 rounded-md hover:bg-secondary transition-colors"
+                onClick={() => track("email_clicked", { location: "hero" })}
               >
                 Email me
               </a>
