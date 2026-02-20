@@ -1,7 +1,26 @@
-import { motion } from "framer-motion";
+import { useEffect, useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { siteData } from "@/data/site";
 
+const ABOUT_IMAGES = [
+  { src: "/syed.jpg", alt: "Syed Aashiq Ahamed" },
+  { src: "/syed-thrissur.jpeg", alt: "Syed at Thrissur beach" },
+  { src: "/syed-varkala.jpeg", alt: "Syed at varkala" },
+];
+
 const About = () => {
+  const [active, setActive] = useState(0);
+
+  useEffect(() => {
+    const id = window.setInterval(() => {
+      setActive((prev) => (prev + 1) % ABOUT_IMAGES.length);
+    }, 3000);
+
+    return () => window.clearInterval(id);
+  }, []);
+
+  const current = ABOUT_IMAGES[active];
+
   return (
     <section id="about" className="section-padding bg-card/50">
       <div className="container-narrow">
@@ -9,7 +28,7 @@ const About = () => {
           initial={{ opacity: 0, y: 16 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-100px" }}
-          transition={{ duration: 0.5 }}
+          transition={{ duration: 0.4 }}
           className="
             flex flex-col-reverse items-start gap-10
             md:flex-row md:items-center md:justify-between md:gap-20
@@ -33,7 +52,7 @@ const About = () => {
             </div>
           </div>
 
-          {/* Image */}
+          {/* Image (auto-rotating, premium crossfade) */}
           <div className="w-full md:w-auto flex justify-center md:justify-end">
             <div
               className="
@@ -42,14 +61,27 @@ const About = () => {
                 shadow-lg ring-1 ring-foreground/5
               "
             >
-              <div className="aspect-square w-full">
-                <img
-                  src="/syed.jpg"
-                  alt="Syed Aashiq Ahamed"
-                  loading="lazy"
-                  decoding="async"
-                  className="h-full w-full object-cover object-[50%_25%]"
-                />
+              <div className="aspect-square w-full relative">
+                <AnimatePresence mode="wait">
+                  <motion.img
+                    key={current.src}
+                    src={current.src}
+                    alt={current.alt}
+                    loading="lazy"
+                    decoding="async"
+                    className="absolute inset-0 h-full w-full object-cover object-[50%_25%]"
+                    initial={{ opacity: 0, scale: 1.03, filter: "blur(6px)" }}
+                    animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
+                    exit={{ opacity: 0, scale: 0.99, filter: "blur(6px)" }}
+                    transition={{
+                      duration: 0.75,
+                      ease: [0.22, 1, 0.36, 1], // premium easeOut
+                    }}
+                  />
+                </AnimatePresence>
+
+                {/* Subtle overlay (premium depth) */}
+                <div className="pointer-events-none absolute inset-0 bg-gradient-to-tr from-black/10 via-transparent to-transparent" />
               </div>
             </div>
           </div>
