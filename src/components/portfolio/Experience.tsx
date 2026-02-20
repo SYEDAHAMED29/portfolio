@@ -131,7 +131,7 @@ const Experience = () => {
                           key={src}
                           src={src}
                           alt={`${exp.company} logo`}
-                          className="w-12 h-12 object-contain"
+                          className="sm:w-12 sm:h-12 h-4 w-4 object-contain"
                           loading="lazy"
                           decoding="async"
                         />
