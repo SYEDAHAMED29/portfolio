@@ -27,7 +27,28 @@ const Hero = () => {
               {siteData.hero.headline}
             </h1>
 
-            <p className="text-muted-foreground text-lg sm:text-xl leading-relaxed mb-6 max-w-lg">
+            <p className="text-muted-foreground text-lg  leading-relaxed mb-6 max-w-lg">
+              <p className="text-muted-foreground text-base sm:text-lg mb-2">
+                SDE-1 building product at{" "}
+                <a
+                  href={siteData.companies.beamer}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-foreground underline decoration-border hover:decoration-foreground underline-offset-4"
+                >
+                  Beamer
+                </a>{" "}
+                ×{" "}
+                <a
+                  href={siteData.companies.userflow}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-foreground underline decoration-border hover:decoration-foreground underline-offset-4"
+                >
+                  Userflow
+                </a>
+                .
+              </p>
               {siteData.hero.subtext}
             </p>
 

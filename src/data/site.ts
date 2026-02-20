@@ -8,12 +8,15 @@ export const siteData = {
   linkedin: "https://www.linkedin.com/in/syed-aashiq-ahamed-6180a9187/",
   github: "https://github.com/SyedAHAMED29",
   resumePath: "/Resume.SyedAashiqAhamed.pdf",
-  status: "Open to opportunities",
-
+  status: "Currently: shipping + fixing edge cases",
+  companies: {
+    beamer: "https://www.getbeamer.com",
+    userflow: "https://userflow.com",
+  },
   hero: {
     headline: "I build React frontends that ship",
     subtext:
-      "SDE-1 @ Beamer × Userflow. I modernize legacy JSP UI into fast, maintainable React systems (Auth, Billing, Dashboards).",
+      "I modernize legacy JSP UI into fast, maintainable React systems. Auth, billing, dashboards, and all the annoying edge cases.",
     badges: ["React", "TypeScript", "Vite", "React Query", "Java", "GraphQL"],
   },
 
@@ -21,36 +24,38 @@ export const siteData = {
     filename: "developer.ts",
     object: `const syed = {
   role: "Frontend / Product Engineer",
-  basedIn: "India",
-  ships: [
-    "Auth migrations",
-    "Billing UX",
-    "UI systems",
+  basedIn: "Coimbatore, India",
+  builds: [
+    "JSP → React migrations",
+    "Billing UX & dashboards",
+    "UI reliability (edge cases)",
   ],
-  stack: [
-    "React", "TypeScript", "Vite",
-    "React Query", "Java", "GraphQL",
+  setup: [
+    "editor: VS Code (Atom One Dark Pro)",
+    "terminal: iterm",
+    "testing: Vitest",
+    "styling: Tailwind (depending on project)",
   ],
-  values: [
+  principles: [
     "clean UX",
     "predictable state",
-    "fast shipping",
+    "fast shipping (without breaking prod)",
   ],
-  currentlyBuilding: "Typing + AI product",
-  openTo: "Frontend / Full-stack product roles",
+  openTo: "Frontend roles",
 }`,
   },
 
   about: [
-    "I'm a frontend engineer who cares deeply about DX and end-user experience — not because it's trendy, but because shipping reliable UI in production is hard, and cutting corners compounds into chaos.",
-    "Most of my work at Beamer has been migrations: taking legacy JSP flows (auth, billing, dashboards) and rebuilding them in React with clean state management, React Query caching, and predictable UX.",
-    "I believe in predictable state over clever abstractions, real-user feedback over premature optimization, and shipping small, observable changes instead of big rewrites.",
+    "I’m Syed, based in Coimbatore. I like tea, calm routines, and knowing exactly why I’m doing something. 😅",
+    "I spend my time working, hanging out with people I trust, and slowly building a life I don’t want to escape from.",
+    "I’m not in a hurry, consistency beats intensity every time.",
   ],
 
   experience: [
     {
       company: "Beamer × Userflow",
-      role: "SDE-1 (Frontend / Product Engineer)",
+      icons: ["/company/beamer.svg", "/company/userflow.svg"],
+      role: "SDE-1 (Frontend )",
       period: "2023 — Present",
       stack: [
         "React",
@@ -60,20 +65,24 @@ export const siteData = {
         "Java",
         "MySQL",
         "GraphQL",
+        "Vitest",
+        "Cloudfare workers",
+        "Google cloud functions",
       ],
       bullets: [
-        "Migrated Auth from legacy JSP → React, improving UX reliability and driving a +32% increase in signups.",
-        "Rebuilt Billing UI in React with Stripe integration — proration, upgrade/downgrade flows, edge-case handling.",
+        "Migrated Auth from legacy JSP to React, improving UX reliability and driving a +32% increase in signups.",
+        "Rebuilt Billing UI in React with Stripe integration proration, upgrade/downgrade flows, edge-case handling.",
         "Shipped Dashboard frontend with reusable component patterns + React Query caching, cutting redundant API calls.",
-        "Built Post Templates (React + Java/Hibernate + MySQL) — reached ~18% adoption across users.",
-        "Built an AI content generator for changelog posts — hit ~21% usage within weeks of launch.",
+        "Built Post Templates (React + Java/Hibernate + MySQL) & reached ~18% adoption across users.",
+        "Built an AI content generator for changelog posts and hit ~21% usage within weeks of launch.",
         "Improved NPS tooling with backend schema updates + cron jobs via Google Cloud Functions.",
         "Resolved 120+ support issues spanning edge cases, stability fixes, and UX improvements.",
       ],
     },
     {
       company: "Movate",
-      role: "Associate Software Engineer",
+      icons: ["/company/movate.svg"],
+      role: "Associate Developer",
       period: "2022 — 2023",
       stack: ["JavaScript", "React", "Node.js"],
       bullets: [
@@ -82,10 +91,11 @@ export const siteData = {
       ],
     },
     {
-      company: "Internship",
-      role: "Software Engineering Intern",
+      company: "CSS Corp",
+      icons: ["/company/csscorp.png"],
+      role: "Intern",
       period: "2021 — 2022",
-      stack: ["HTML", "CSS", "JavaScript", "Python"],
+      stack: ["HTML", "CSS", "JavaScript"],
       bullets: [
         "Built and maintained web interfaces for internal tools, gaining foundational frontend experience.",
       ],
@@ -126,10 +136,10 @@ export const siteData = {
       },
     ],
     knownFor: [
-      "Legacy → React migrations",
-      "Billing UX (Stripe/proration)",
-      "UI reliability (support-driven fixes)",
-      "Clean state & data fetching patterns",
+      "Fixing the weird stuff nobody wants to touch",
+      "Being allergic to flaky UI states",
+      "Predictable state and boring-but-solid solutions",
+      "Shipping fast without creating future pain",
     ],
   },
 
@@ -200,7 +210,7 @@ export const siteData = {
 
   contact: {
     closingLine:
-      "If you're hiring for frontend/product engineers, I'd love to talk.",
+      "If you’re building cool stuff and need a frontend guy, hit me up.",
   },
 
   nav: [

@@ -1,6 +1,100 @@
+import React from "react";
 import { motion } from "framer-motion";
-import { siteData } from "@/data/site";
-import { Briefcase } from "lucide-react";
+// import { siteData } from "@/data/site"; // not needed anymore for experience
+import { Briefcase } from "lucide-react"; // keep it if you want fallback later
+
+type ExperienceItem = {
+  company: string;
+  role: string;
+  period: string;
+  icons?: string[];
+  stack: string[];
+  bullets: React.ReactNode[];
+};
+
+const EXPERIENCE: ExperienceItem[] = [
+  {
+    company: "Beamer × Userflow",
+    role: "SDE-1 (Frontend / Product Engineer)",
+    period: "November 2023 — Present",
+    icons: ["/company/beamer.svg", "/company/userflow.svg"],
+    stack: [
+      "React",
+      "TypeScript",
+      "Vite",
+      "React Query",
+      "Java",
+      "MySQL",
+      "GraphQL",
+      "Vitest",
+      "Cloudflare Workers",
+      "Google Cloud Functions",
+    ],
+    bullets: [
+      <>
+        Migrated auth from legacy JSP to React, driving a{" "}
+        <span className="text-foreground font-medium">+32% increase</span> in
+        signups.
+      </>,
+      <>
+        Rebuilt billing UI with Stripe, proration, upgrade/downgrade flows, and
+        edge-case handling.
+      </>,
+      <>
+        Shipped dashboard frontend with reusable component patterns + caching,
+        cutting redundant API calls.
+      </>,
+      <>
+        Built post templates and reached{" "}
+        <span className="text-foreground font-medium">~18% adoption</span>{" "}
+        across users.
+      </>,
+      <>
+        Built an AI content generator and hit{" "}
+        <span className="text-foreground font-medium">~21% usage</span> within
+        weeks of launch.
+      </>,
+      <>
+        Improved NPS tooling with backend schema updates + scheduled jobs via{" "}
+        Google Cloud Functions.
+      </>,
+      <>
+        <span className="text-foreground font-medium">Resolved 120+</span>{" "}
+        support issues across edge cases, stability fixes, and UX improvements.
+      </>,
+    ],
+  },
+  {
+    company: "Movate",
+    role: "Associate Developer",
+    period: "June 2022 — August 2023",
+    icons: ["/company/movate.svg"],
+    stack: ["JavaScript", "React", "Node.js"],
+    bullets: [
+      <>
+        Built internal tooling dashboards that reduced manual work and improved
+        team speed.
+      </>,
+      <>
+        Shipped frontend features in tight timelines, collaborating with support
+        and engineering.
+      </>,
+    ],
+  },
+  {
+    company: "CSS Corp",
+    role: "Intern",
+    period: "January 2022 - June 2022",
+    icons: ["/company/csscorp.png"],
+    stack: ["HTML", "CSS", "JavaScript"],
+    bullets: [
+      <>
+        Did the classic intern thing, built UI, fixed bugs, and learned by
+        breaking stuff (then fixing it).
+      </>,
+    ],
+  },
+];
 
 const Experience = () => {
   return (
@@ -18,7 +112,7 @@ const Experience = () => {
         </motion.div>
 
         <div className="space-y-8">
-          {siteData.experience.map((exp, i) => (
+          {EXPERIENCE.map((exp, i) => (
             <motion.div
               key={i}
               initial={{ opacity: 0, y: 16 }}
@@ -30,8 +124,19 @@ const Experience = () => {
               {/* Header */}
               <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 mb-4">
                 <div className="flex items-start gap-3">
-                  <div className="mt-0.5 p-2 rounded-md bg-secondary">
-                    <Briefcase size={16} className="text-primary" />
+                  <div className="mt-0.5 p-1 rounded-md bg-secondary">
+                    <div className="flex items-center gap-2">
+                      {(exp.icons ?? []).map((src) => (
+                        <img
+                          key={src}
+                          src={src}
+                          alt={`${exp.company} logo`}
+                          className="w-12 h-12 object-contain"
+                          loading="lazy"
+                          decoding="async"
+                        />
+                      ))}
+                    </div>
                   </div>
 
                   <div>

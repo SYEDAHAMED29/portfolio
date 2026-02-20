@@ -43,7 +43,7 @@ const Navbar = () => {
               {item.label}
             </a>
           ))}
-          <div className="flex items-center gap-3 ml-2 border-l border-border pl-4">
+          <div className="flex items-center gap-8 ml-2 border-l border-border pl-8">
             <a
               href={siteData.github}
               target="_blank"
