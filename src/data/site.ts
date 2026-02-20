@@ -23,7 +23,7 @@ export const siteData = {
   codeCard: {
     filename: "developer.ts",
     object: `const syed = {
-  role: "Frontend / Product Engineer",
+  role: "Frontend Engineer",
   basedIn: "Coimbatore, India",
   builds: [
     "JSP → React migrations",
