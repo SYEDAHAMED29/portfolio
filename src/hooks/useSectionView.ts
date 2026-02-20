@@ -18,7 +18,6 @@ export const useSectionView = (id: views) => {
         if (fired) return;
         if (entry.isIntersecting) {
           fired = true;
-          console.log("firing");
           track("section_view", { section: id });
           obs.disconnect();
         }
