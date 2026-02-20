@@ -8,7 +8,7 @@ const Footer = () => {
           © {new Date().getFullYear()} {siteData.name}
         </p>
         <p className="text-xs text-muted-foreground font-mono">
-          Built with React + TypeScript
+          Built with React ⚛️
         </p>
       </div>
     </footer>

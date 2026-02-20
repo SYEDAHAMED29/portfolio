@@ -46,9 +46,8 @@ export const siteData = {
   },
 
   about: [
-    "I’m Syed, based in Coimbatore. I like tea, calm routines, and knowing exactly why I’m doing something. 😅",
-    "I spend my time working, hanging out with people I trust, and slowly building a life I don’t want to escape from.",
-    "I’m not in a hurry, consistency beats intensity every time.",
+    "Hi, I’m Syed, based in Coimbatore. Apart from work, I spend a lot of time exploring other products, trying to recreate them, and thinking about startups and ideas of my own. I like getting hands-on with things and prefer not to be limited to a strict set of roles. I learn best by getting my hands dirty and figuring things out as I go.",
+    "When I’m not coding, you’ll probably find me running, playing table tennis, checking out fancy cafés, or drinking a lot of tea.",
   ],
 
   experience: [
@@ -68,15 +67,6 @@ export const siteData = {
         "Vitest",
         "Cloudfare workers",
         "Google cloud functions",
-      ],
-      bullets: [
-        "Migrated Auth from legacy JSP to React, improving UX reliability and driving a +32% increase in signups.",
-        "Rebuilt Billing UI in React with Stripe integration proration, upgrade/downgrade flows, edge-case handling.",
-        "Shipped Dashboard frontend with reusable component patterns + React Query caching, cutting redundant API calls.",
-        "Built Post Templates (React + Java/Hibernate + MySQL) & reached ~18% adoption across users.",
-        "Built an AI content generator for changelog posts and hit ~21% usage within weeks of launch.",
-        "Improved NPS tooling with backend schema updates + cron jobs via Google Cloud Functions.",
-        "Resolved 120+ support issues spanning edge cases, stability fixes, and UX improvements.",
       ],
     },
     {
