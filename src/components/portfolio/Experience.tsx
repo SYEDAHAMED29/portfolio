@@ -2,6 +2,7 @@ import React from "react";
 import { motion } from "framer-motion";
 // import { siteData } from "@/data/site"; // not needed anymore for experience
 import { Briefcase } from "lucide-react"; // keep it if you want fallback later
+import { useSectionView } from "@/hooks/useSectionView";
 
 type ExperienceItem = {
   company: string;
@@ -97,6 +98,7 @@ const EXPERIENCE: ExperienceItem[] = [
 ];
 
 const Experience = () => {
+  useSectionView("Experience");
   return (
     <section id="experience" className="section-padding">
       <div className="container-narrow">

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { siteData } from "@/data/site";
+import { useSectionView } from "@/hooks/useSectionView";
 
 const ABOUT_IMAGES = [
   { src: "/syed.jpg", alt: "Syed Aashiq Ahamed" },
@@ -10,6 +11,7 @@ const ABOUT_IMAGES = [
 
 const About = () => {
   const [active, setActive] = useState(0);
+  useSectionView("About");
 
   useEffect(() => {
     const id = window.setInterval(() => {

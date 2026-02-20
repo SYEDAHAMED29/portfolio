@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { siteData } from "@/data/site";
 import { Monitor, Server, Wrench, Zap } from "lucide-react";
+import { useSectionView } from "@/hooks/useSectionView";
 
 const iconMap: Record<string, React.ReactNode> = {
   Monitor: <Monitor size={20} />,
@@ -9,6 +10,7 @@ const iconMap: Record<string, React.ReactNode> = {
 };
 
 const Skills = () => {
+  useSectionView("Skills");
   return (
     <section id="skills" className="section-padding bg-card/50">
       <div className="container-narrow">
