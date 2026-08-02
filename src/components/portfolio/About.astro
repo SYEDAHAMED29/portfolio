@@ -1,0 +1,104 @@
+---
+import { siteData } from "../../data/site";
+
+const images = [
+  { src: "/syed.jpg", alt: "Syed Aashiq Ahamed", width: 2164, height: 2321 },
+  {
+    src: "/syed-thrissur.jpeg",
+    alt: "Syed at Thrissur beach",
+    width: 960,
+    height: 1280,
+  },
+  {
+    src: "/syed-varkala.jpeg",
+    alt: "Syed at Varkala",
+    width: 960,
+    height: 1280,
+  },
+];
+---
+
+<section id="about" class="section-padding bg-card/50">
+  <div class="container-narrow">
+    <div
+      class="reveal flex flex-col-reverse items-start gap-10 md:flex-row md:items-center md:justify-between md:gap-20"
+    >
+      <div class="min-w-0">
+        <h2
+          class="mb-6 font-display text-3xl font-bold text-foreground lg:text-4xl"
+        >
+          About
+        </h2><div class="max-w-2xl space-y-4">
+          {
+            siteData.about.map((paragraph) => (
+              <p class="text-base leading-relaxed text-muted-foreground lg:text-lg">
+                {paragraph}
+              </p>
+            ))
+          }
+        </div>
+      </div>
+      <div class="flex w-full justify-center md:w-auto md:justify-end">
+        <div
+          class="relative w-56 overflow-hidden rounded-2xl border border-border/60 bg-muted shadow-lg ring-1 ring-foreground/5 sm:w-64 md:w-[320px] lg:w-[400px]"
+        >
+          <div class="aspect-square">
+            <div data-about-carousel class="relative h-full w-full">
+              {
+                images.map((image, index) => (
+                  <img
+                    src={image.src}
+                    alt={image.alt}
+                    width={image.width}
+                    height={image.height}
+                    loading={index === 0 ? "eager" : "lazy"}
+                    decoding="async"
+                    class:list={[
+                      "absolute inset-0 h-full w-full object-cover object-[50%_25%] transition-all duration-700",
+                      index === 0
+                        ? "opacity-100"
+                        : "pointer-events-none scale-[1.03] opacity-0 blur-sm",
+                    ]}
+                    data-about-image
+                  />
+                ))
+              }
+            </div><div
+              class="pointer-events-none absolute inset-0 bg-gradient-to-tr from-black/10 via-transparent to-transparent"
+            >
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  const images = Array.from(
+    document.querySelectorAll<HTMLImageElement>("[data-about-image]"),
+  );
+  if (
+    images.length > 1 &&
+    !window.matchMedia("(prefers-reduced-motion: reduce)").matches
+  ) {
+    let active = 0;
+    window.setInterval(() => {
+      images[active]?.classList.add(
+        "pointer-events-none",
+        "scale-[1.03]",
+        "opacity-0",
+        "blur-sm",
+      );
+      images[active]?.classList.remove("opacity-100");
+      active = (active + 1) % images.length;
+      images[active]?.classList.remove(
+        "pointer-events-none",
+        "scale-[1.03]",
+        "opacity-0",
+        "blur-sm",
+      );
+      images[active]?.classList.add("opacity-100");
+    }, 3000);
+  }
+</script>

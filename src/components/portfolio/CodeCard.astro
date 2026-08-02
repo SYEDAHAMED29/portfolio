@@ -1,0 +1,83 @@
+---
+import { Code } from "astro:components";
+import { siteData } from "../../data/site";
+const lineNumbers = Array.from(
+  { length: siteData.codeCard.object.split("\n").length },
+  (_, index) => index + 1,
+);
+---
+
+<div
+  class="code-card glow-sm overflow-hidden rounded-lg border border-code-border bg-code-bg"
+>
+  <div class="flex items-center gap-2 border-b border-code-border px-4 py-2.5">
+    <span class="h-3 w-3 rounded-full bg-destructive/60"></span><span
+      class="h-3 w-3 rounded-full bg-primary/40"></span><span
+      class="h-3 w-3 rounded-full bg-code-string/40"></span>
+    <span class="ml-2 font-mono text-xs text-muted-foreground"
+      >{siteData.codeCard.filename}</span
+    >
+  </div>
+  <div class="code-card__scroll">
+    <div class="code-card__content">
+      <div class="code-card__line-numbers" aria-hidden="true">
+        {lineNumbers.map((lineNumber) => <span>{lineNumber}</span>)}
+      </div>
+      <Code code={siteData.codeCard.object} lang="ts" theme="one-dark-pro" />
+    </div>
+  </div>
+</div>
+
+<style>
+  .code-card {
+    background-color: hsl(var(--code-bg));
+    border-color: hsl(var(--code-border));
+  }
+
+  .code-card__scroll {
+    overflow-x: auto;
+  }
+
+  .code-card__content {
+    display: flex;
+    min-width: max-content;
+    padding: 1rem;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 0.875rem;
+    line-height: 1.625;
+  }
+
+  .code-card__line-numbers {
+    flex: 0 0 2rem;
+    margin-right: 1rem;
+    color: hsl(var(--code-comment));
+    font-size: 0.75rem;
+    line-height: 1.421875rem;
+    text-align: right;
+    user-select: none;
+  }
+
+  .code-card__line-numbers span {
+    display: block;
+    height: 1.421875rem;
+  }
+
+  .code-card__content :global(.astro-code) {
+    margin: 0;
+    border: 0;
+    border-radius: 0;
+    padding: 0;
+    overflow: visible;
+    background: transparent !important;
+    color: inherit;
+    font: inherit;
+    line-height: inherit;
+  }
+
+  .code-card__content :global(.astro-code code) {
+    display: block;
+    font: inherit;
+    line-height: inherit;
+  }
+
+</style>

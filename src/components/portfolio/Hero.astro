@@ -1,0 +1,23 @@
+---
+import { Circle } from "@lucide/astro";
+import { siteData } from "../../data/site";
+import CodeCard from "./CodeCard.astro";
+---
+
+<section id="hero" class="section-padding flex min-h-screen items-center pt-28 md:pt-20">
+  <div class="container-narrow">
+    <div class="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
+      <div class="animate-fade-in-up">
+        <div class="mb-6 inline-flex items-center gap-2 rounded-full border border-pill-border bg-secondary px-3 py-1.5 font-mono text-sm text-code-string"><Circle size={6} stroke-width={2} class="fill-current" aria-hidden="true" />{siteData.status}</div>
+        <h1 class="mb-4 font-display text-4xl font-bold leading-tight tracking-tight text-foreground sm:text-5xl sm:leading-none lg:text-[60px]">{siteData.hero.headline}</h1>
+        <div class="mb-6 max-w-lg text-lg leading-relaxed text-muted-foreground">
+          <p class="mb-2 text-base sm:text-lg">SDE-1 building product at <a href={siteData.companies.beamer} target="_blank" rel="noopener noreferrer" data-analytics-event="Beamer_Company_Clicked" class="text-foreground underline decoration-border underline-offset-4 hover:decoration-foreground">Beamer</a> × <a href={siteData.companies.userflow} target="_blank" rel="noopener noreferrer" data-analytics-event="Userflow_Company_Clicked" class="text-foreground underline decoration-border underline-offset-4 hover:decoration-foreground">Userflow</a>.</p>
+          <p>{siteData.hero.subtext}</p>
+        </div>
+        <div class="mb-8 flex flex-wrap gap-2">{siteData.hero.badges.map((badge) => <span class="pill px-2.5 py-1 text-sm">{badge}</span>)}</div>
+        <div class="flex flex-wrap gap-3"><a href="#experience" class="button-primary px-5 py-2.5 text-base">View Experience</a><a href={`mailto:${siteData.email}`} data-analytics-event="email_clicked" data-analytics-location="hero" class="button-secondary px-5 py-2.5 text-base">Email me</a></div>
+      </div>
+      <div class="hidden animate-fade-in-right lg:block"><CodeCard /></div>
+    </div>
+  </div>
+</section>
