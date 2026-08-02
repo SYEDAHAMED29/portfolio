@@ -1,10 +1,14 @@
 ---
+import { Code } from "astro:components";
 import { siteData } from "../../data/site";
-const lines = siteData.codeCard.object.split("\n");
+const lineNumbers = Array.from(
+  { length: siteData.codeCard.object.split("\n").length },
+  (_, index) => index + 1,
+);
 ---
 
 <div
-  class="glow-sm overflow-hidden rounded-lg border border-code-border bg-code-bg"
+  class="code-card glow-sm overflow-hidden rounded-lg border border-code-border bg-code-bg"
 >
   <div class="flex items-center gap-2 border-b border-code-border px-4 py-2.5">
     <span class="h-3 w-3 rounded-full bg-destructive/60"></span><span
@@ -14,6 +18,66 @@ const lines = siteData.codeCard.object.split("\n");
       >{siteData.codeCard.filename}</span
     >
   </div>
-  <pre
-    class="overflow-x-auto p-4 font-mono text-sm leading-relaxed"><code>{lines.map((line, index) => <span class="flex"><span class="mr-4 w-8 select-none text-right text-xs leading-relaxed text-code-comment">{index + 1}</span><span class="text-code-bracket">{line}</span></span>)}</code></pre>
+  <div class="code-card__scroll">
+    <div class="code-card__content">
+      <div class="code-card__line-numbers" aria-hidden="true">
+        {lineNumbers.map((lineNumber) => <span>{lineNumber}</span>)}
+      </div>
+      <Code code={siteData.codeCard.object} lang="ts" theme="one-dark-pro" />
+    </div>
+  </div>
 </div>
+
+<style>
+  .code-card {
+    background-color: hsl(var(--code-bg));
+    border-color: hsl(var(--code-border));
+  }
+
+  .code-card__scroll {
+    overflow-x: auto;
+  }
+
+  .code-card__content {
+    display: flex;
+    min-width: max-content;
+    padding: 1rem;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 0.875rem;
+    line-height: 1.625;
+  }
+
+  .code-card__line-numbers {
+    flex: 0 0 2rem;
+    margin-right: 1rem;
+    color: hsl(var(--code-comment));
+    font-size: 0.75rem;
+    line-height: 1.421875rem;
+    text-align: right;
+    user-select: none;
+  }
+
+  .code-card__line-numbers span {
+    display: block;
+    height: 1.421875rem;
+  }
+
+  .code-card__content :global(.astro-code) {
+    margin: 0;
+    border: 0;
+    border-radius: 0;
+    padding: 0;
+    overflow: visible;
+    background: transparent !important;
+    color: inherit;
+    font: inherit;
+    line-height: inherit;
+  }
+
+  .code-card__content :global(.astro-code code) {
+    display: block;
+    font: inherit;
+    line-height: inherit;
+  }
+
+</style>

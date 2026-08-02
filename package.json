@@ -12,6 +12,7 @@
     "check": "astro check"
   },
   "dependencies": {
+    "@lucide/astro": "^1.28.0",
     "@tailwindcss/vite": "4.1.17",
     "astro": "^7.1.6",
     "posthog-js": "^1.352.0",
