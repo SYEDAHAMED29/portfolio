@@ -4,31 +4,125 @@ import { siteData } from "../../data/site";
 import BrandIcon from "./BrandIcon.astro";
 ---
 
-<nav class="site-nav fixed top-0 left-0 right-0 z-50 transition-all duration-300" data-site-nav>
-  <div class="container-narrow flex h-16 items-center justify-between px-6 lg:px-0">
-    <a href="#hero" class="font-display text-2xl font-semibold tracking-tight text-foreground">
+<nav
+  class="site-nav fixed top-0 left-0 right-0 z-50 transition-all duration-300"
+  data-site-nav
+>
+  <div
+    class="container-narrow flex h-16 items-center justify-between px-6 lg:px-0"
+  >
+    <a
+      href="#hero"
+      class="font-display text-2xl font-semibold tracking-tight text-foreground"
+    >
       SYED<span class="text-primary">.</span>
     </a>
     <div class="hidden items-center gap-9 md:flex">
-      {siteData.nav.map((item) => <a href={item.href} class="text-base text-muted-foreground transition-colors hover:text-foreground">{item.label}</a>)}
+      {
+        siteData.nav.map((item) => (
+          <a
+            href={item.href}
+            class="text-base text-muted-foreground transition-colors hover:text-foreground"
+          >
+            {item.label}
+          </a>
+        ))
+      }
       <div class="ml-2 flex items-center gap-8 border-l border-border pl-8">
-        <a href={siteData.github} target="_blank" rel="noopener noreferrer" aria-label="GitHub" data-analytics-event="github_clicked" data-analytics-location="navbar" class="icon-link text-muted-foreground hover:text-foreground"><BrandIcon name="github" size={18} /></a>
-        <a href={siteData.linkedin} target="_blank" rel="noopener noreferrer" aria-label="LinkedIn" data-analytics-event="linkedin_clicked" data-analytics-location="navbar" class="icon-link text-muted-foreground hover:text-foreground"><BrandIcon name="linkedin" size={18} /></a>
-        <a href={siteData.resumePath} target="_blank" rel="noopener noreferrer" data-analytics-event="resume_clicked" data-analytics-location="navbar" class="button-primary px-3 py-1.5 text-base">Resume</a>
+        <a
+          href={siteData.github}
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="GitHub"
+          data-analytics-event="github_clicked"
+          data-analytics-location="navbar"
+          class="icon-link text-muted-foreground hover:text-foreground"
+          ><BrandIcon name="github" size={18} /></a
+        >
+        <a
+          href={siteData.linkedin}
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="LinkedIn"
+          data-analytics-event="linkedin_clicked"
+          data-analytics-location="navbar"
+          class="icon-link text-muted-foreground hover:text-foreground"
+          ><BrandIcon name="linkedin" size={18} /></a
+        >
+        <a
+          href={siteData.resumePath}
+          target="_blank"
+          rel="noopener noreferrer"
+          data-analytics-event="resume_clicked"
+          data-analytics-location="navbar"
+          class="button-primary px-3 py-1.5 text-base">Resume</a
+        >
       </div>
     </div>
-    <button class="menu-toggle md:hidden" type="button" aria-label="Toggle navigation menu" aria-expanded="false" aria-controls="mobile-menu" data-menu-toggle>
+    <button
+      class="menu-toggle md:hidden"
+      type="button"
+      aria-label="Toggle navigation menu"
+      aria-expanded="false"
+      aria-controls="mobile-menu"
+      data-menu-toggle
+    >
       <Menu data-menu-open size={22} stroke-width={2} aria-hidden="true" />
-      <X data-menu-close size={22} stroke-width={2} aria-hidden="true" class="hidden" />
+      <X
+        data-menu-close
+        size={22}
+        stroke-width={2}
+        aria-hidden="true"
+        class="hidden"
+      />
     </button>
   </div>
-  <div id="mobile-menu" class="mobile-menu border-b border-border bg-background/95 px-6 backdrop-blur-md md:hidden" data-mobile-menu>
+  <div
+    id="mobile-menu"
+    class="mobile-menu border-b border-border bg-background/95 px-6 backdrop-blur-md md:hidden"
+    data-mobile-menu
+  >
     <div class="flex min-h-0 flex-col gap-4 overflow-hidden pt-2 pb-6">
-      {siteData.nav.map((item) => <a href={item.href} class="text-base text-muted-foreground transition-colors hover:text-foreground" data-mobile-link>{item.label}</a>)}
+      {
+        siteData.nav.map((item) => (
+          <a
+            href={item.href}
+            class="text-base text-muted-foreground transition-colors hover:text-foreground"
+            data-mobile-link
+          >
+            {item.label}
+          </a>
+        ))
+      }
       <div class="flex items-center gap-4 border-t border-border pt-2">
-        <a href={siteData.github} target="_blank" rel="noopener noreferrer" aria-label="GitHub" data-analytics-event="github_clicked" data-analytics-location="navbar" class="icon-link text-muted-foreground hover:text-foreground"><BrandIcon name="github" size={18} /></a>
-        <a href={siteData.linkedin} target="_blank" rel="noopener noreferrer" aria-label="LinkedIn" data-analytics-event="linkedin_clicked" data-analytics-location="navbar" class="icon-link text-muted-foreground hover:text-foreground"><BrandIcon name="linkedin" size={18} /></a>
-        <a href={siteData.resumePath} target="_blank" rel="noopener noreferrer" data-analytics-event="resume_clicked" data-analytics-location="navbar" class="button-primary px-3 py-1.5 text-base">Resume</a>
+        <a
+          href={siteData.github}
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="GitHub"
+          data-analytics-event="github_clicked"
+          data-analytics-location="navbar"
+          class="icon-link text-muted-foreground hover:text-foreground"
+          ><BrandIcon name="github" size={18} /></a
+        >
+        <a
+          href={siteData.linkedin}
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="LinkedIn"
+          data-analytics-event="linkedin_clicked"
+          data-analytics-location="navbar"
+          class="icon-link text-muted-foreground hover:text-foreground"
+          ><BrandIcon name="linkedin" size={18} /></a
+        >
+        <a
+          href={siteData.resumePath}
+          target="_blank"
+          rel="noopener noreferrer"
+          data-analytics-event="resume_clicked"
+          data-analytics-location="navbar"
+          class="button-primary px-3 py-1.5 text-base">Resume</a
+        >
       </div>
     </div>
   </div>
@@ -36,7 +130,8 @@ import BrandIcon from "./BrandIcon.astro";
 
 <script>
   const nav = document.querySelector<HTMLElement>("[data-site-nav]");
-  const toggle = document.querySelector<HTMLButtonElement>("[data-menu-toggle]");
+  const toggle =
+    document.querySelector<HTMLButtonElement>("[data-menu-toggle]");
   const menu = document.querySelector<HTMLElement>("[data-mobile-menu]");
   const openIcon = document.querySelector<SVGElement>("[data-menu-open]");
   const closeIcon = document.querySelector<SVGElement>("[data-menu-close]");
@@ -53,8 +148,14 @@ import BrandIcon from "./BrandIcon.astro";
   toggle?.addEventListener("click", () => {
     setMenuOpen(!menu?.classList.contains("is-open"));
   });
-  document.querySelectorAll("[data-mobile-link]").forEach((link) => link.addEventListener("click", closeMenu));
-  window.addEventListener("scroll", () => nav?.classList.toggle("nav-scrolled", window.scrollY > 20), { passive: true });
+  document
+    .querySelectorAll("[data-mobile-link]")
+    .forEach((link) => link.addEventListener("click", closeMenu));
+  window.addEventListener(
+    "scroll",
+    () => nav?.classList.toggle("nav-scrolled", window.scrollY > 20),
+    { passive: true },
+  );
 </script>
 
 <style>
@@ -67,7 +168,12 @@ import BrandIcon from "./BrandIcon.astro";
     pointer-events: none;
     transform: translateY(-0.5rem);
     visibility: hidden;
-    transition: grid-template-rows 180ms ease, opacity 150ms ease, transform 180ms ease, border-color 180ms ease, visibility 0s linear 180ms;
+    transition:
+      grid-template-rows 180ms ease,
+      opacity 150ms ease,
+      transform 180ms ease,
+      border-color 180ms ease,
+      visibility 0s linear 180ms;
   }
 
   .mobile-menu.is-open {
@@ -77,7 +183,11 @@ import BrandIcon from "./BrandIcon.astro";
     pointer-events: auto;
     transform: translateY(0);
     visibility: visible;
-    transition: grid-template-rows 180ms ease, opacity 150ms ease, transform 180ms ease, border-color 180ms ease;
+    transition:
+      grid-template-rows 180ms ease,
+      opacity 150ms ease,
+      transform 180ms ease,
+      border-color 180ms ease;
   }
 
   @media (min-width: 768px) {
