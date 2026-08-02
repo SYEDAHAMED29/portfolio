@@ -1,0 +1,57 @@
+---
+import { siteData } from "../../data/site";
+---
+
+<nav class="site-nav fixed top-0 left-0 right-0 z-50 transition-all duration-300" data-site-nav>
+  <div class="container-narrow flex h-16 items-center justify-between px-6 lg:px-0">
+    <a href="#hero" class="font-display text-2xl font-semibold tracking-tight text-foreground">
+      SYED<span class="text-primary">.</span>
+    </a>
+    <div class="hidden items-center gap-9 md:flex">
+      {siteData.nav.map((item) => <a href={item.href} class="text-base text-muted-foreground transition-colors hover:text-foreground">{item.label}</a>)}
+      <div class="ml-2 flex items-center gap-8 border-l border-border pl-8">
+        <a href={siteData.github} target="_blank" rel="noopener noreferrer" aria-label="GH GitHub" data-analytics-event="github_clicked" data-analytics-location="navbar" class="icon-link text-muted-foreground hover:text-foreground"><span aria-hidden="true">GH</span></a>
+        <a href={siteData.linkedin} target="_blank" rel="noopener noreferrer" aria-label="in LinkedIn" data-analytics-event="linkedin_clicked" data-analytics-location="navbar" class="icon-link text-muted-foreground hover:text-foreground"><span aria-hidden="true">in</span></a>
+        <a href={siteData.resumePath} target="_blank" rel="noopener noreferrer" data-analytics-event="resume_clicked" data-analytics-location="navbar" class="button-primary px-3 py-1.5 text-base">Resume</a>
+      </div>
+    </div>
+    <button class="menu-toggle md:hidden" type="button" aria-label="Toggle navigation menu" aria-expanded="false" aria-controls="mobile-menu" data-menu-toggle>
+      <svg data-menu-open aria-hidden="true" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16" /></svg>
+      <svg data-menu-close aria-hidden="true" class="hidden" viewBox="0 0 24 24"><path d="m6 6 12 12M18 6 6 18" /></svg>
+    </button>
+  </div>
+  <div id="mobile-menu" class="hidden border-b border-border bg-background/95 px-6 pb-6 backdrop-blur-md md:hidden" data-mobile-menu>
+    <div class="flex flex-col gap-4 pt-2">
+      {siteData.nav.map((item) => <a href={item.href} class="text-base text-muted-foreground transition-colors hover:text-foreground" data-mobile-link>{item.label}</a>)}
+      <div class="flex items-center gap-4 border-t border-border pt-2">
+        <a href={siteData.github} target="_blank" rel="noopener noreferrer" aria-label="GH GitHub" data-analytics-event="github_clicked" data-analytics-location="navbar" class="icon-link text-muted-foreground hover:text-foreground"><span aria-hidden="true">GH</span></a>
+        <a href={siteData.linkedin} target="_blank" rel="noopener noreferrer" aria-label="in LinkedIn" data-analytics-event="linkedin_clicked" data-analytics-location="navbar" class="icon-link text-muted-foreground hover:text-foreground"><span aria-hidden="true">in</span></a>
+        <a href={siteData.resumePath} target="_blank" rel="noopener noreferrer" data-analytics-event="resume_clicked" data-analytics-location="navbar" class="button-primary px-3 py-1.5 text-base">Resume</a>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<script>
+  const nav = document.querySelector<HTMLElement>("[data-site-nav]");
+  const toggle = document.querySelector<HTMLButtonElement>("[data-menu-toggle]");
+  const menu = document.querySelector<HTMLElement>("[data-mobile-menu]");
+  const openIcon = document.querySelector<SVGElement>("[data-menu-open]");
+  const closeIcon = document.querySelector<SVGElement>("[data-menu-close]");
+
+  const closeMenu = () => {
+    menu?.classList.add("hidden");
+    toggle?.setAttribute("aria-expanded", "false");
+    openIcon?.classList.remove("hidden");
+    closeIcon?.classList.add("hidden");
+  };
+
+  toggle?.addEventListener("click", () => {
+    const isOpen = menu?.classList.toggle("hidden") === false;
+    toggle.setAttribute("aria-expanded", String(isOpen));
+    openIcon?.classList.toggle("hidden", isOpen);
+    closeIcon?.classList.toggle("hidden", !isOpen);
+  });
+  document.querySelectorAll("[data-mobile-link]").forEach((link) => link.addEventListener("click", closeMenu));
+  window.addEventListener("scroll", () => nav?.classList.toggle("nav-scrolled", window.scrollY > 20), { passive: true });
+</script>
