@@ -562,7 +562,6 @@ button:focus-visible {
   margin: 1.5rem 0;
   overflow-x: auto;
   border: 1px solid var(--blog-border-strong);
-  border-left: 2px solid var(--blog-accent);
   border-radius: 0.5rem;
   background: var(--blog-code-bg);
   padding: 0.875rem;
