@@ -1,0 +1,64 @@
+---
+title: "MDX Authoring Example"
+description: "A development-only reference for using reusable components inside blog posts."
+publishedDate: 2026-08-04
+category: "Development"
+tags:
+  - Astro
+  - MDX
+featured: false
+draft: true
+---
+
+import Callout from "../../components/blog/blocks/Callout.astro";
+import GitHubSourceLink from "../../components/blog/blocks/GitHubSourceLink.astro";
+
+This short post demonstrates when to reach for MDX while keeping ordinary Markdown the default.
+
+## Use a block only when it adds meaning
+
+Normal Markdown still handles [links](https://docs.astro.build/), `inline code`, headings, lists, and fenced code blocks.
+
+```ts
+const format = (value: string) => value.trim();
+```
+
+<Callout type="note">
+
+MDX components are useful for **specialized content blocks** that should be reusable across articles.
+
+</Callout>
+
+<Callout type="warning" title="Keep MDX optional">
+
+- Start with `.md` for ordinary technical writing.
+- Choose `.mdx` when the article imports a component or needs MDX expressions.
+
+</Callout>
+
+## GitHub source links
+
+Use a source link immediately before the related code excerpt. The component derives the file path and line range from a normal GitHub URL.
+
+<GitHubSourceLink href="https://github.com/JayaKrishnaNamburu/cjs-esm-mix/blob/246a5f0cec42064a1e20b908d564dbca1168e7c9/packages/shared/src/helpers.ts#L1-L22" />
+
+```ts
+export function formatDate(date: Date): string {
+  return new Intl.DateTimeFormat("en-US").format(date);
+}
+```
+
+<GitHubSourceLink href="https://github.com/owner/repository/blob/main/src/example.ts#L10" />
+
+<GitHubSourceLink href="https://github.com/owner/repository" />
+
+<GitHubSourceLink
+  href="https://github.com/owner/repository/blob/main/src/example.ts#L10-L24"
+  path="src/example.ts"
+  lineLabel="L10-L24"
+/>
+
+<GitHubSourceLink
+  href="https://github.com/owner/repository/blob/main/packages/platform/src/features/observability/instrumentation/long-nested-file-name.ts"
+  path="packages/platform/src/features/observability/instrumentation/long-nested-file-name.ts"
+/>

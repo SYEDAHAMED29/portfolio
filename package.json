@@ -12,6 +12,7 @@
     "check": "astro check"
   },
   "dependencies": {
+    "@astrojs/mdx": "^7.0.5",
     "@lucide/astro": "^1.28.0",
     "@tailwindcss/vite": "4.1.17",
     "astro": "^7.1.6",

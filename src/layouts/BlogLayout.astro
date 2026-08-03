@@ -1,0 +1,87 @@
+---
+import type { CollectionEntry } from "astro:content";
+import Navbar from "../components/portfolio/Navbar.astro";
+import Footer from "../components/portfolio/Footer.astro";
+import BlogMeta from "../components/blog/BlogMeta.astro";
+import BaseLayout from "./BaseLayout.astro";
+
+interface Props {
+  post: CollectionEntry<"blog">;
+  readingTime?: string;
+  previous?: CollectionEntry<"blog">;
+  next?: CollectionEntry<"blog">;
+}
+
+const { post, readingTime, previous, next } = Astro.props;
+const isDraft = post.data.draft && import.meta.env.DEV;
+---
+
+<BaseLayout
+  title={`${post.data.title} — Syed Aashiq Ahamed`}
+  description={post.data.description}
+  noIndex={isDraft}
+  ogType="article"
+  publishedDate={post.data.publishedDate}
+  updatedDate={post.data.updatedDate}
+  image={post.data.image}
+>
+  <Navbar homeHref="/" />
+  <main class="blog-article-page">
+    <article class="blog-article">
+      <header class="blog-article-header">
+        <div class="blog-article-kicker">
+          <a href="/blog">Blog</a>
+          <span aria-hidden="true">/</span>
+          <span>{post.data.category}</span>
+          {isDraft && <span class="blog-draft">Draft</span>}
+        </div>
+        <h1>{post.data.title}</h1>
+        <p class="blog-article-description">{post.data.description}</p>
+        <BlogMeta
+          publishedDate={post.data.publishedDate}
+          updatedDate={post.data.updatedDate}
+          readingTime={readingTime}
+        />
+        <ul class="blog-tags" aria-label="Tags">
+          {post.data.tags.map((tag) => <li>{tag}</li>)}
+        </ul>
+      </header>
+
+      {
+        post.data.image && (
+          <figure class="blog-article-image">
+            <img src={post.data.image} alt={post.data.title} loading="eager" />
+          </figure>
+        )
+      }
+
+      <div class="blog-prose">
+        <slot />
+      </div>
+
+      <nav class="blog-article-nav" aria-label="Article navigation">
+        {
+          previous ? (
+            <a href={`/blog/${previous.id}`}>
+              <span>Older article</span>
+              <strong>{previous.data.title}</strong>
+            </a>
+          ) : (
+            <span />
+          )
+        }
+        {
+          next ? (
+            <a class="blog-article-nav-next" href={`/blog/${next.id}`}>
+              <span>Newer article</span>
+              <strong>{next.data.title}</strong>
+            </a>
+          ) : (
+            <span />
+          )
+        }
+      </nav>
+    </article>
+  </main>
+  <Footer />
+</BaseLayout>
