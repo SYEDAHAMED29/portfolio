@@ -2,6 +2,14 @@
 import { Menu, X } from "@lucide/astro";
 import { siteData } from "../../data/site";
 import BrandIcon from "./BrandIcon.astro";
+
+interface Props {
+  homeHref?: string;
+}
+
+const { homeHref = "#hero" } = Astro.props;
+const sectionHref = (href: string) =>
+  homeHref === "#hero" ? href : `/${href}`;
 ---
 
 <nav
@@ -12,7 +20,7 @@ import BrandIcon from "./BrandIcon.astro";
     class="container-narrow flex h-16 items-center justify-between px-6 lg:px-0"
   >
     <a
-      href="#hero"
+      href={homeHref}
       class="font-display text-2xl font-semibold tracking-tight text-foreground"
     >
       SYED<span class="text-primary">.</span>
@@ -21,7 +29,7 @@ import BrandIcon from "./BrandIcon.astro";
       {
         siteData.nav.map((item) => (
           <a
-            href={item.href}
+            href={sectionHref(item.href)}
             class="text-base text-muted-foreground transition-colors hover:text-foreground"
           >
             {item.label}
@@ -86,7 +94,7 @@ import BrandIcon from "./BrandIcon.astro";
       {
         siteData.nav.map((item) => (
           <a
-            href={item.href}
+            href={sectionHref(item.href)}
             class="text-base text-muted-foreground transition-colors hover:text-foreground"
             data-mobile-link
           >

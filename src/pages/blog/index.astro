@@ -1,0 +1,83 @@
+---
+import { getCollection } from "astro:content";
+import BlogCard from "../../components/blog/BlogCard.astro";
+import Navbar from "../../components/portfolio/Navbar.astro";
+import Footer from "../../components/portfolio/Footer.astro";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+
+const posts = (
+  await getCollection("blog", ({ data }) => import.meta.env.DEV || !data.draft)
+).sort(
+  (a, b) => b.data.publishedDate.getTime() - a.data.publishedDate.getTime(),
+);
+const featuredPost = posts.find(({ data }) => data.featured);
+const archivePosts = posts.filter((post) => post.id !== featuredPost?.id);
+const readingTime = (body?: string) => {
+  if (!body) return undefined;
+  const words = body.trim().split(/\s+/).filter(Boolean).length;
+  return `${Math.max(1, Math.ceil(words / 200))} min read`;
+};
+---
+
+<BaseLayout
+  title="Blog — Syed Aashiq Ahamed"
+  description="Writing about frontend systems, migrations, and lessons from production."
+>
+  <Navbar homeHref="/" />
+  <main class="blog-listing-page">
+    <div class="container-narrow blog-listing-container">
+      <header class="blog-listing-header">
+        <div class="blog-listing-title-row">
+          <h1>Blog</h1>
+          <span class="blog-status">Engineering notes</span>
+        </div>
+        <p>
+          Writing about frontend systems, migrations, and lessons from
+          production.
+        </p>
+      </header>
+
+      {
+        featuredPost && (
+          <section
+            aria-labelledby="featured-heading"
+            class="blog-listing-section"
+          >
+            <div class="blog-section-heading">
+              <h2 id="featured-heading">Featured</h2>
+            </div>
+            <BlogCard
+              post={featuredPost}
+              readingTime={readingTime(featuredPost.body)}
+              isDraft={featuredPost.data.draft}
+              featured
+            />
+          </section>
+        )
+      }
+
+      {
+        archivePosts.length > 0 && (
+          <section
+            aria-labelledby="archive-heading"
+            class="blog-listing-section"
+          >
+            <div class="blog-section-heading">
+              <h2 id="archive-heading">All writing</h2>
+            </div>
+            <div class="blog-card-stack">
+              {archivePosts.map((post) => (
+                <BlogCard
+                  post={post}
+                  readingTime={readingTime(post.body)}
+                  isDraft={post.data.draft}
+                />
+              ))}
+            </div>
+          </section>
+        )
+      }
+    </div>
+  </main>
+  <Footer />
+</BaseLayout>
