@@ -101,6 +101,42 @@ The block accepts normal Markdown content, including **strong text** and lists.
 
 The label and border communicate the variant together, so meaning does not depend on color alone.
 
+## GitHub source links
+
+Use `GitHubSourceLink` when an article needs to point readers to the exact GitHub file or lines behind a code excerpt. It is an optional MDX block; ordinary Markdown links should remain normal links.
+
+Because it imports an Astro component, this block requires an `.mdx` post:
+
+```mdx
+import GitHubSourceLink from "../../components/blog/blocks/GitHubSourceLink.astro";
+```
+
+The simplest usage derives the path and line range from the URL:
+
+```mdx
+<GitHubSourceLink href="https://github.com/owner/repository/blob/main/src/example.ts#L10-L24" />
+```
+
+Place it immediately before the related code block:
+
+````mdx
+<GitHubSourceLink href="https://github.com/owner/repository/blob/commit/src/example.ts#L10-L24" />
+
+```ts
+// Related source excerpt
+```
+````
+
+Props:
+
+- `href`: required source URL. It is preserved as the external link destination and opens in a new tab.
+- `path`: optional display override for unusual GitHub URLs, including branch names containing slashes or nonstandard routes.
+- `lineLabel`: optional display override such as `L10-L24` or `L10`.
+
+Supported GitHub fragments include `#L1` and `#L1-L22`. Ranges display as `L1–22`. If the URL cannot be parsed, the block keeps the real URL and uses a safe `View source on GitHub` label instead of failing the article.
+
+The path wraps on small screens and the line range remains visible. Keep the block close to the code it documents so the relationship is clear.
+
 ## Standard Markdown examples
 
 ````md

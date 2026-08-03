@@ -1,0 +1,228 @@
+---
+title: "How I Used Codex, MCPs, and Skills to Move a React Portfolio to Astro"
+description: "A practical account of using repository analysis, documentation MCPs, browser inspection, and iterative prompts to migrate a portfolio and build its Markdown/MDX blog."
+publishedDate: 2026-08-04
+category: Engineering
+tags:
+  - Astro
+  - Codex
+  - Migration
+  - Developer Tools
+featured: true
+draft: true
+---
+
+import Callout from "../../components/blog/blocks/Callout.astro";
+import GitHubSourceLink from "../../components/blog/blocks/GitHubSourceLink.astro";
+
+I started with a small React portfolio and two related problems. The site worked, but its application runtime was larger than the content it delivered. I also wanted to publish technical writing without turning the portfolio into a second application.
+
+The migration became an experiment in AI-assisted engineering. I used Codex to inspect and change the repository, Graphify to map architecture and reachability, Astro Docs MCP for version-sensitive decisions, Chrome DevTools MCP for browser validation, and design and coding skills for research and implementation. The tools helped me move quickly, but adding more context and more tools did not always produce better results.
+
+This is the story of that workflow: understanding the existing React system, converting it to Astro while preserving its experience, validating the result in a browser, and then building a typed Markdown/MDX blog on top of it.
+
+## I began with a working React site, not a blank Astro project
+
+The first task was not choosing a framework. It was finding the actual migration boundary in an existing codebase. The repository was a Vite React application with `createRoot`, `BrowserRouter`, TanStack Query, a PostHog React provider, Framer Motion, Lucide React, Radix UI packages, and a large shadcn-style component directory.
+
+The reachable home route was smaller than the dependency list suggested. It rendered a navbar, hero, about, experience, skills, contact, and footer sections. The old blog page existed as a React component, but its route was commented out and it was not yet a content system. Analytics had already moved from Google Analytics to PostHog, so preserving event behavior mattered as much as preserving visual styling.
+
+That distinction shaped the work. I did not want to preserve every file. I wanted to preserve the user-facing contract: routes, content, assets, typography, navigation, responsive behavior, accessibility, SEO metadata, and analytics events. Unreachable UI-library code was a migration liability, not part of the experience.
+
+## Graphify gave the migration an architecture map
+
+I used ordinary repository inspection together with Graphify before removing React code. Graphify’s useful contribution was not replacing source reading. It created a relationship-oriented view of components, imports, routes, data, and dependencies, which made questions about reachability easier to ask.
+
+The migration preparation used focused questions such as which components rendered the home page, which React-only dependencies were reachable, how `src/data/site.ts` flowed into visible sections, and how analytics connected to user interactions. That was more useful than asking for a generic summary of the entire repository.
+
+The graph also exposed its boundary. A generic home-page query returned configuration and breadcrumb nodes alongside the relevant components, so I had to make the queries more specific and verify the answers against source files. Later, Graphify was unnecessary for small CSS corrections and leaf components. Once the architecture was understood, opening the relevant Astro file was faster than rebuilding or traversing another graph.
+
+The exact original generation command is not preserved in the evidence I have, so I am not presenting `/graphify ./web --no-cluster` as fact. The repository rules document `--no-cluster`, and Graphify was refreshed with `graphify update .` after major changes, but the initial command remains something I would verify before publishing as a reproducible step.
+
+That became my first tool-selection lesson: use repository analysis when the question is architectural. Stop using it when the question has narrowed to a selector, a prop, or one component.
+
+## I scoped the migration around behavior, not file conversion
+
+The migration prompt was intentionally constraint-heavy. It required the agent to preserve the existing design, content, routes, assets, analytics, accessibility, responsive behavior, fonts, favicons, and metadata. It also required the implementation to prefer Astro components and static HTML, leaving JavaScript only where the browser still needed to do something.
+
+Astro Docs MCP supplied current documentation context for Astro migration, routing, Tailwind integration, client behavior, and later MDX. That context reduced the temptation to rely on remembered APIs. It did not make the implementation correct automatically. I still had to decide which parts of the React application were actually interactive and what the browser behavior should be after conversion.
+
+I treated the work as four separate activities: understand the codebase, plan the architecture, implement the conversion, and validate the result. Combining those activities in one prompt was useful for momentum, but it also made the session large. The best prompts named the current phase and its acceptance criteria rather than asking the agent to keep every prior decision active forever.
+
+## The migration removed the application shell and kept the interactions
+
+The React entry point and provider tree disappeared. React, ReactDOM, React Router, Framer Motion, the React PostHog wrapper, Radix/shadcn components, and other unused dependencies were removed from the application surface. The reachable portfolio sections became `.astro` components, and the home page became a direct composition of those components in `src/pages/index.astro`.
+
+The important boundary was not “all JavaScript versus no JavaScript.” The static content became HTML at build time. The mobile navigation still needed a click handler. The navbar still needed scroll-state behavior. Analytics still needed to initialize in production and capture clicks. Those behaviors remained as small browser scripts rather than forcing the entire page back into a client-rendered framework.
+
+`BaseLayout.astro` became the shared shell for document metadata, canonical URLs, Open Graph and Twitter fields, fonts, favicons, the web manifest, analytics initialization, and delegated event tracking. The new Astro components kept the existing visual tokens and data rather than introducing a redesign during a framework migration.
+
+Two follow-up commits made the cost of static conversion visible. One restored Lucide icons and the code-card syntax highlighting. Another corrected the hero line height and header transition behavior. The migration was structurally complete before it was visually complete.
+
+## A successful build did not prove visual parity
+
+The browser validation phase caught issues that source inspection and compiler checks could not. I used Chrome DevTools MCP for screenshots, DOM snapshots, computed styles, responsive viewport checks, console messages, network requests, and interaction inspection. Desktop, tablet, and mobile widths all mattered because typography changes become layout changes at narrow widths.
+
+The header font size and hero line height needed correction. I also checked the mobile menu, anchor navigation, resume and external links, focus states, images, the blog route, and the custom 404 page. The final migration session reported no application console errors and no failed first-party asset requests. The Lighthouse endpoint available through that workflow did not provide a Performance category, so there was no performance score to report.
+
+Chrome DevTools MCP and Playwright are not interchangeable in this workflow. DevTools was useful for understanding a live page: why an element had a computed style, whether a long path overflowed, what the console reported, and how a page looked at a specific viewport. Playwright would be better suited to repeatable scripted regression checks. I found evidence for Chrome DevTools MCP use here, not for Playwright execution.
+
+[Add screenshot: portfolio before and after the Astro migration at desktop and mobile widths]
+
+## The measured result was smaller, but the number needs context
+
+The migration session reported these JavaScript figures:
+
+| Version         | Raw JavaScript |   Gzip |
+| --------------- | -------------: | -----: |
+| React portfolio |         629 KB | 203 KB |
+| Astro portfolio |         169 KB |  56 KB |
+
+These are session-reported measurements, not build artifacts preserved in the repository. I would recover the original commands and output before treating them as independently reproducible benchmark data.
+
+The structural change is less ambiguous. The current package manifest no longer contains React, ReactDOM, React Router, Framer Motion, Radix packages, or the React UI bundle. The current site renders portfolio and blog pages through Astro components and static paths, with small browser scripts for navigation and analytics.
+
+The smaller bundle does not prove that every user experience metric improved. It shows that the site stopped shipping a large application runtime for content that could be rendered as HTML. Images, fonts, third-party analytics, network conditions, and browser scheduling still affect the experience. The architectural result is useful because it makes the default delivery model match the site’s content.
+
+<Callout type="warning" title="Keep the measurements honest">
+
+The bundle figures above are reported from the migration session. They are useful evidence for the story, but not a substitute for preserving a reproducible build-size report alongside the migration commit.
+
+</Callout>
+
+## After the migration, the blog became the next architecture problem
+
+Once the portfolio was static-first, I wanted a real technical blog rather than the old placeholder page. I had a goal of writing many posts, so the content layer needed predictable frontmatter, stable URLs, drafts, article metadata, and a low-friction authoring workflow.
+
+I used Jaya Krishna’s article at `https://jkrishna.dev/blog/mixed-imports-tree-shaking/` as a structural reference. The reference had the qualities I wanted for technical writing: a narrow reading column, a clear article hierarchy, deliberate spacing, strong code presentation, framed media, and localized scrolling on small screens. I did not want to copy its branding or make the portfolio look like another site.
+
+The design work happened in stages. `extract-design-system` produced `reference-design-report.md` from the reference article. A separate pass audited the deployed portfolio and local source tokens, producing `docs/current-design-system.md`. Then `ui-ux-pro-max` combined those reports into `docs/blog-design-spec.md`.
+
+That separation mattered. The extraction report described what the reference site did. It did not automatically produce my blog design. The final specification kept the reference’s content-first structure while retaining the portfolio’s Space Grotesk headings, Inter prose, JetBrains Mono metadata and code, dark navy-black surfaces, amber primary accent, green code accent, and blue informational accent. The article width became 720px, while the listing retained the portfolio’s wider 1100px container.
+
+I also learned not to rerun the design workflow after the specification existed. The report and spec became handoff documents for implementation. Repeating the research would have consumed context without changing the decision.
+
+## Skills were useful when they produced an artifact
+
+The repository records several installed skills, but installation alone is not evidence of use. The skills that mattered had clear outputs or implementation boundaries.
+
+`extract-design-system` gathered evidence about an external reference and the deployed portfolio. Its useful output was not a recommendation like “use a modern dark theme.” It was a report of colors, widths, typography, spacing, code blocks, tables, images, and responsive behavior that I could inspect and reconcile against source.
+
+`ui-ux-pro-max` helped turn those observations into decisions: the article width, typography pairing, semantic blog tokens, card treatment, accent mapping, and overflow rules. Its value was highest before implementation. After `docs/blog-design-spec.md` existed, using it for every component would have duplicated settled reasoning.
+
+`astro-best-practices` guided the Astro implementation around static rendering, accessibility, scoped component behavior, and validation. `ctx-agent-history-search` is the skill I used to reconstruct the historical workflow for this article. The repository also contains `technical-writing`, which I am using now to turn those notes into a coherent case study; I am not treating its presence as evidence that it shaped the original migration.
+
+The general pattern was simple: select a skill when it answers a phase-specific question and leaves behind something reusable. A skill that only adds another layer of context to a settled decision is usually overhead.
+
+## Content Collections gave future posts a contract
+
+The blog uses Astro Content Collections to load local Markdown and MDX files, validate their frontmatter, and generate static article routes. The collection definition is the contract between an article file and the listing/article templates.
+
+```ts
+const blog = defineCollection({
+  loader: glob({
+    pattern: "**/*.{md,mdx}",
+    base: "./src/content/blog",
+  }),
+  schema: z.object({
+    title: z.string(),
+    description: z.string(),
+    publishedDate: z.coerce.date(),
+    category: z.string(),
+    tags: z.array(z.string()),
+    featured: z.boolean().default(false),
+    draft: z.boolean().default(false),
+  }),
+});
+```
+
+This belongs in `src/content.config.ts`. The loader scans both supported file formats. Zod makes the fields used for sorting, labels, metadata, and tags explicit instead of leaving each page to defend against missing values.
+
+The listing page calls `getCollection("blog")`, filters drafts outside development, sorts by publication date, computes a reading-time label, and renders `BlogCard`. The dynamic route calls `getStaticPaths()`, passes adjacent posts as previous/next navigation, calls `render(post)`, and places the resulting `<Content />` inside `BlogLayout.astro`.
+
+That architecture keeps article rendering at build time. It also gives future posts one route model and one SEO path. The system is intentionally smaller than a CMS: there is no search index, comments system, pagination layer, or runtime content fetch.
+
+## Markdown stayed the default; MDX became an escape hatch
+
+The first article used Markdown. That was enough for prose, headings, lists, links, fenced code, tables, blockquotes, and images. The authoring guide still recommends `.md` for that shape of post.
+
+MDX initially looked unnecessary. The decision changed when I wanted reusable article blocks rather than one-off markup. The final setup uses `@astrojs/mdx`, calls `mdx()` in the Astro configuration, and loads both extensions through the same content collection. Markdown and MDX share the schema, listing route, article route, layout, draft filtering, SEO, and Shiki configuration.
+
+The rule is now clear:
+
+```text
+Normal article → Markdown
+Article importing a custom Astro component → MDX
+```
+
+MDX did not require React or client-side hydration. The components are trusted local Astro files compiled into the article at build time. This kept the content system static while giving selected posts a small extension point.
+
+The integration and validation sequence stayed small:
+
+```sh
+npx astro add mdx
+npm run check
+npm run build
+```
+
+The first command added the official integration during the MDX phase. The latter two checked the collection and generated the static output. When the integration was present in `package.json` but unavailable in `node_modules`, the development server could not start; that dependency-state failure was different from a routing failure.
+
+## GitHubSourceLink made the MDX decision concrete
+
+The strongest reason to add MDX was `GitHubSourceLink`. I noticed the compact source references on the reference article and inspected their structure and responsive behavior with Chrome DevTools MCP. The goal was to adapt the idea to the portfolio’s own blog tokens, not copy CSS blindly.
+
+The component accepts `href`, with optional `path` and `lineLabel` overrides. It parses GitHub `blob` URLs into a readable file path and recognizes fragments such as `#L1` and `#L1-L22`. It opens the source in a new tab, exposes an accessible label, keeps the line range visible, wraps long paths, and removes its transition when reduced motion is requested.
+
+The component is used directly in an `.mdx` post:
+
+````mdx
+import GitHubSourceLink from "../../components/blog/blocks/GitHubSourceLink.astro";
+
+<GitHubSourceLink href="https://github.com/JayaKrishnaNamburu/cjs-esm-mix/blob/246a5f0cec42064a1e20b908d564dbca1168e7c9/packages/shared/src/helpers.ts#L1-L22" />
+
+```ts
+export function formatDate(date: Date): string {
+  return new Intl.DateTimeFormat("en-US").format(date);
+}
+```
+````
+
+<GitHubSourceLink href="https://github.com/JayaKrishnaNamburu/cjs-esm-mix/blob/246a5f0cec42064a1e20b908d564dbca1168e7c9/packages/shared/src/helpers.ts#L1-L22" />
+
+The source-link block belongs immediately before the excerpt it documents. That relationship is the useful part: readers can move from a small code sample to the exact file and line range without each article reimplementing the same parsing, accessibility, and responsive behavior.
+
+`Callout.astro` follows the same boundary. It renders a semantic `<aside>` with `note`, `info`, `warning`, and `success` variants, but it does not turn every paragraph or code block into a component. Ordinary Markdown remains semantic HTML styled through `.blog-prose`; special article blocks are Astro components used through MDX.
+
+## The expensive part was not always the code
+
+The workflow exposed several ways to waste context. My prompts became large enough to restate repository rules, design decisions, validation requirements, tool inventories, and historical context that had already been settled. Asking the agent to reread all of that made the next task feel informed, but it also made small changes expensive.
+
+I also forced broad tools into narrow tasks. Graphify was valuable while deciding what was reachable and safe to remove. It was not valuable for answering where a particular blog code block got its CSS. The design skills were valuable while producing the reports and specification. They were not needed after those artifacts existed. A GitHub source-link component did not need every available MCP and design audit in the same prompt.
+
+The evidence notes include two token-usage figures supplied for confirmation, but the exact usage metadata was not recoverable from the local session index. The same caution applies to the reported model labels. If I publish those numbers, I need to attach the original usage output and state exactly which work the session covered. The later blog session included the blog foundation, design implementation, MDX support, reusable blocks, refactors, and browser validation; it was not only a component session.
+
+<Callout type="note" title="Tool availability is not free">
+
+Every MCP call, repeated repository audit, large cached prompt, and long-lived session adds context and latency. I now treat a report or design specification as a handoff artifact, not an invitation to repeat the analysis in every subsequent prompt.
+
+</Callout>
+
+## A smaller workflow would have been better
+
+For an architecture-wide migration, I would start with repository inspection, focused Graphify queries, and Astro Docs MCP. The output would be a short migration map containing reachable routes, components, interactions, dependencies, and acceptance criteria. I would then start a fresh implementation session with that map rather than carrying the entire discovery transcript forward.
+
+For visual parity, I would use Chrome DevTools MCP after the first production build. Its job would be diagnosis: computed styles, responsive layout, overflow, console errors, and interaction behavior. A repeatable browser test suite could then cover the checks that need to run again; I found no evidence that Playwright was used in this project.
+
+For the blog, I would run design extraction once, save the reference and portfolio reports, and use `ui-ux-pro-max` once to produce the design specification. Implementation would use `astro-best-practices` plus that saved spec. A small MDX block would receive a targeted source inspection and a focused validation prompt, not the complete migration context.
+
+Most importantly, each phase would end with a compact handoff: what changed, what was verified, what remains uncertain, and which files are authoritative. That would preserve the reasoning without paying to reconstruct it repeatedly.
+
+## The result was an architecture and a workflow lesson
+
+Astro was the foundation because this portfolio could render most of its stable content as HTML and reserve JavaScript for navigation and analytics. The more durable result was the boundary around that decision: static portfolio components, a shared layout, a typed content collection, build-time article rendering, Markdown by default, and MDX only for reusable blocks.
+
+Codex accelerated the migration, but it did not remove the need for architectural judgment or browser validation. Graphify helped me understand what I could remove, Astro Docs MCP reduced version guessing, design tools turned observations into a specification, and Chrome DevTools MCP found differences that a passing build could not see.
+
+The main lesson was more self-critical. More tools did not always mean better engineering. The useful workflow was the one that matched the tool to the current question, saved the answer as a reusable artifact, and started a fresh context before settled decisions became prompt baggage.
+
+[Add screenshot: final blog article at desktop and approximately 390px mobile width]

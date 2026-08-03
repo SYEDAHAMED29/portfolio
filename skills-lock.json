@@ -7,6 +7,12 @@
       "skillPath": "skills/astro-best-practices/SKILL.md",
       "computedHash": "353ad7ebffed9a06dab2cb762b28ec6b8fb07abb00cb731b34c9df60315e0e7f"
     },
+    "ctx-agent-history-search": {
+      "source": "ctxrs/ctx",
+      "sourceType": "github",
+      "skillPath": "skills/ctx-agent-history-search/SKILL.md",
+      "computedHash": "7e1d4136a07527643e5f27abd49787b4e3a9d7fddb2f77655c8ab706df6a0334"
+    },
     "extract-design-system": {
       "source": "arvindrk/extract-design-system",
       "sourceType": "github",
@@ -18,6 +24,12 @@
       "sourceType": "github",
       "skillPath": "skills/migrate/SKILL.md",
       "computedHash": "09cf601e2fac99f472e16b6e7fbe84fee58cc906c49f94ca51f1fa23873ba833"
+    },
+    "technical-writing": {
+      "source": "mindrally/skills",
+      "sourceType": "github",
+      "skillPath": "technical-writing/SKILL.md",
+      "computedHash": "0544628a33393af1909297224d9346bdc2fedeb47ff5281f77e9b9dac97655fa"
     },
     "ui-ux-pro-max": {
       "source": "nextlevelbuilder/ui-ux-pro-max-skill",
