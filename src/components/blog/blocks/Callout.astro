@@ -1,0 +1,76 @@
+---
+interface Props {
+  type?: "note" | "info" | "warning" | "success";
+  title?: string;
+}
+
+const labels = {
+  note: "Note",
+  info: "Info",
+  warning: "Warning",
+  success: "Success",
+} as const;
+
+const { type = "note", title } = Astro.props;
+const label = title ?? labels[type];
+---
+
+<aside class:list={["blog-callout", `blog-callout-${type}`]}>
+  <p class="blog-callout-title">{label}</p>
+  <div class="blog-callout-content">
+    <slot />
+  </div>
+</aside>
+
+<style>
+  .blog-callout {
+    margin: 1.5rem 0;
+    border: 1px solid var(--blog-border);
+    border-left: 3px solid var(--blog-accent);
+    border-radius: 0.375rem;
+    background: var(--blog-surface);
+    padding: 1rem 1.125rem;
+    color: var(--blog-text-on-surface);
+  }
+
+  .blog-callout-info {
+    border-left-color: var(--blog-accent-info);
+  }
+
+  .blog-callout-warning {
+    border-left-color: var(--blog-accent);
+  }
+
+  .blog-callout-success {
+    border-left-color: var(--blog-accent-code);
+  }
+
+  .blog-callout-title {
+    margin: 0 0 0.5rem;
+    color: var(--blog-text);
+    font-family: "JetBrains Mono", monospace;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    line-height: 1.125rem;
+    text-transform: uppercase;
+  }
+
+  .blog-callout-content :global(p),
+  .blog-callout-content :global(ul),
+  .blog-callout-content :global(ol) {
+    margin-top: 0;
+    margin-bottom: 0.75rem;
+  }
+
+  .blog-callout-content :global(p:last-child),
+  .blog-callout-content :global(ul:last-child),
+  .blog-callout-content :global(ol:last-child) {
+    margin-bottom: 0;
+  }
+
+  .blog-callout-content :global(ul),
+  .blog-callout-content :global(ol) {
+    padding-left: 1.5rem;
+  }
+</style>

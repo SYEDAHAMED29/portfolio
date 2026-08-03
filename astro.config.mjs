@@ -1,4 +1,5 @@
 import { defineConfig } from "astro/config";
+import mdx from "@astrojs/mdx";
 import tailwindcss from "@tailwindcss/vite";
 
 export default defineConfig({
@@ -8,6 +9,7 @@ export default defineConfig({
       theme: "one-dark-pro",
     },
   },
+  integrations: [mdx()],
   vite: {
     plugins: [tailwindcss()],
     // PUBLIC_ is the Astro convention. The legacy prefix remains temporarily
