@@ -1,0 +1,34 @@
+---
+interface Props {
+  publishedDate: Date;
+  updatedDate?: Date;
+  readingTime?: string;
+}
+
+const { publishedDate, updatedDate, readingTime } = Astro.props;
+const dateFormatter = new Intl.DateTimeFormat("en", {
+  dateStyle: "medium",
+});
+---
+
+<div class="blog-meta" aria-label="Article metadata">
+  <time datetime={publishedDate.toISOString()}>
+    {dateFormatter.format(publishedDate)}
+  </time>
+  {
+    updatedDate && (
+      <>
+        <span aria-hidden="true">·</span>
+        <span>Updated {dateFormatter.format(updatedDate)}</span>
+      </>
+    )
+  }
+  {
+    readingTime && (
+      <>
+        <span aria-hidden="true">·</span>
+        <span>{readingTime}</span>
+      </>
+    )
+  }
+</div>

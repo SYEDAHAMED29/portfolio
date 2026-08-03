@@ -48,57 +48,57 @@ All other colors remain existing neutral surfaces and text tokens. Do not introd
 
 ### Exact usage map
 
-| Element | Recommended color and treatment |
-|---|---|
-| Article links | Amber text with a 1px underline; underline offset `3px`. Use amber on page background or card surfaces. |
-| Link hover | Keep amber and increase underline thickness to `2px`; do not switch to a new hue. For navigation links, retain foreground on hover as on the portfolio. |
-| Article headings | Existing foreground `#e0e6eb`, never a chromatic accent. Use amber only for small section markers or linked headings when useful. |
-| Blog tags | Pill background `#1a1c23`, pill foreground `#c2ccd6`, pill border `#272a35`. Optional tag variants use amber, green, or blue text with a low-opacity matching border/background. |
-| Category labels | Use blue for informational categories, green for frontend/code categories, amber for migration/shipping categories. Pair color with text so color is never the only distinction. |
-| Featured articles | Amber top rule or small amber featured marker; preserve card surface and border. Avoid full amber card fills. |
-| Article cards | Card `#111318`, border `#1e2129`; title foreground; excerpt should use `#c2ccd6` on cards rather than muted gray-blue. |
-| Blockquote borders | Amber `2px` left border. Quote text remains `#c2ccd6` or foreground, not amber. |
-| Inline code | Amber text on code background `#0e1015`, with existing code border only when needed. Use compact padding and a subtle radius. |
+| Element            | Recommended color and treatment                                                                                                                                                                                     |
+| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Article links      | Amber text with a 1px underline; underline offset `3px`. Use amber on page background or card surfaces.                                                                                                             |
+| Link hover         | Keep amber and increase underline thickness to `2px`; do not switch to a new hue. For navigation links, retain foreground on hover as on the portfolio.                                                             |
+| Article headings   | Existing foreground `#e0e6eb`, never a chromatic accent. Use amber only for small section markers or linked headings when useful.                                                                                   |
+| Blog tags          | Pill background `#1a1c23`, pill foreground `#c2ccd6`, pill border `#272a35`. Optional tag variants use amber, green, or blue text with a low-opacity matching border/background.                                    |
+| Category labels    | Use blue for informational categories, green for frontend/code categories, amber for migration/shipping categories. Pair color with text so color is never the only distinction.                                    |
+| Featured articles  | Amber top rule or small amber featured marker; preserve card surface and border. Avoid full amber card fills.                                                                                                       |
+| Article cards      | Card `#111318`, border `#1e2129`; title foreground; excerpt should use `#c2ccd6` on cards rather than muted gray-blue.                                                                                              |
+| Blockquote borders | Amber `2px` left border. Quote text remains `#c2ccd6` or foreground, not amber.                                                                                                                                     |
+| Inline code        | Amber text on code background `#0e1015`, with existing code border only when needed. Use compact padding and a subtle radius.                                                                                       |
 | Code-block accents | Code background `#0e1015`; left accent border amber for the primary example, green for output/status examples, blue for type/property emphasis. Syntax colors may continue using the existing generated code theme. |
-| Highlighted text | Use amber only for short, intentional emphasis; use a low-opacity amber background with foreground text when highlighting a phrase. Never highlight whole paragraphs. |
-| Focus rings | Existing amber `2px` outline with `3px` offset. Keep it visible on background, card, and code surfaces. |
-| Calls to action | Existing amber button with page-background foreground. Secondary CTA retains transparent background, foreground text, and border. |
+| Highlighted text   | Use amber only for short, intentional emphasis; use a low-opacity amber background with foreground text when highlighting a phrase. Never highlight whole paragraphs.                                               |
+| Focus rings        | Existing amber `2px` outline with `3px` offset. Keep it visible on background, card, and code surfaces.                                                                                                             |
+| Calls to action    | Existing amber button with page-background foreground. Secondary CTA retains transparent background, foreground text, and border.                                                                                   |
 
 ## Contrast verification
 
 Ratios below are calculated from the normalized values in the existing design system. WCAG AA target is `4.5:1` for normal text and `3:1` for large text or non-text focus indicators.
 
-| Pair | Ratio | Result / rule |
-|---|---:|---|
-| Body text `#e0e6eb` on page background `#0a0b0f` | 15.63:1 | Passes AAA; use for prose and headings. |
-| Muted text `#6c7c93` on page background `#0a0b0f` | 4.63:1 | Passes AA narrowly; use at `16px+` for important supporting copy. |
-| Muted text `#6c7c93` on card `#111318` | 4.37:1 | Fails AA for normal text; use `#c2ccd6` or foreground for card excerpts/metadata. |
-| Amber links `#f6a823` on page background | 9.88:1 | Passes AAA; underline remains required for inline link clarity. |
-| Amber on card background | 9.33:1 | Passes AAA; suitable for links and markers. |
-| Code text `#e0e6eb` on code background `#0e1015` | 15.12:1 | Passes AAA. |
-| Tag text `#c2ccd6` on pill background `#1a1c23` | 10.45:1 | Passes AAA. |
-| Green `#47d1a3` on page background | 10.23:1 | Passes AAA; use for technical/status accents. |
-| Blue `#85b3e0` on page background | 8.92:1 | Passes AAA; use for category labels and property-like accents. |
-| Amber focus indicator against page background | 9.88:1 | Clearly visible; retain `2px` outline and `3px` offset. |
+| Pair                                              |   Ratio | Result / rule                                                                     |
+| ------------------------------------------------- | ------: | --------------------------------------------------------------------------------- |
+| Body text `#e0e6eb` on page background `#0a0b0f`  | 15.63:1 | Passes AAA; use for prose and headings.                                           |
+| Muted text `#6c7c93` on page background `#0a0b0f` |  4.63:1 | Passes AA narrowly; use at `16px+` for important supporting copy.                 |
+| Muted text `#6c7c93` on card `#111318`            |  4.37:1 | Fails AA for normal text; use `#c2ccd6` or foreground for card excerpts/metadata. |
+| Amber links `#f6a823` on page background          |  9.88:1 | Passes AAA; underline remains required for inline link clarity.                   |
+| Amber on card background                          |  9.33:1 | Passes AAA; suitable for links and markers.                                       |
+| Code text `#e0e6eb` on code background `#0e1015`  | 15.12:1 | Passes AAA.                                                                       |
+| Tag text `#c2ccd6` on pill background `#1a1c23`   | 10.45:1 | Passes AAA.                                                                       |
+| Green `#47d1a3` on page background                | 10.23:1 | Passes AAA; use for technical/status accents.                                     |
+| Blue `#85b3e0` on page background                 |  8.92:1 | Passes AAA; use for category labels and property-like accents.                    |
+| Amber focus indicator against page background     |  9.88:1 | Clearly visible; retain `2px` outline and `3px` offset.                           |
 
 Do not use the existing code comment color `#4c5767` for required prose, labels, instructions, or interactive states; its contrast is approximately `2.60:1` on the code background.
 
 ## 2. Blog color system
 
-| Semantic role | Existing token/value | Blog meaning |
-|---|---|---|
-| `blog-bg` | `--background` / `#0a0b0f` | Article and listing canvas. |
-| `blog-surface` | `--card` / `#111318` | Cards, related articles, and featured surfaces. |
-| `blog-surface-subtle` | `--secondary` / `#1a1c23` | Tags, table headers, and compact metadata surfaces. |
-| `blog-text` | `--foreground` / `#e0e6eb` | Body text, headings, table cells when high emphasis is needed. |
-| `blog-text-muted` | `--muted-foreground` / `#6c7c93` | Navigation and low-priority metadata on the page background only. |
-| `blog-text-on-surface` | `--pill-foreground` / `#c2ccd6` | Card excerpts, quotes, and metadata on elevated surfaces. |
-| `blog-border` | `--border` / `#1e2129` | Card edges, dividers, and structural rules. |
-| `blog-border-strong` | `--code-border` / `#23262f` | Code/media/table boundaries. |
-| `blog-accent` | `--primary` / `#f6a823` | Links, CTA, focus, featured marker, blockquote rule. |
-| `blog-accent-code` | `--code-string` / `#47d1a3` | Code/output/status accent. |
-| `blog-accent-info` | `--code-property` / `#85b3e0` | Category and property/type accent. |
-| `blog-code-bg` | `--code-bg` / `#0e1015` | Inline and block code surface. |
+| Semantic role          | Existing token/value             | Blog meaning                                                      |
+| ---------------------- | -------------------------------- | ----------------------------------------------------------------- |
+| `blog-bg`              | `--background` / `#0a0b0f`       | Article and listing canvas.                                       |
+| `blog-surface`         | `--card` / `#111318`             | Cards, related articles, and featured surfaces.                   |
+| `blog-surface-subtle`  | `--secondary` / `#1a1c23`        | Tags, table headers, and compact metadata surfaces.               |
+| `blog-text`            | `--foreground` / `#e0e6eb`       | Body text, headings, table cells when high emphasis is needed.    |
+| `blog-text-muted`      | `--muted-foreground` / `#6c7c93` | Navigation and low-priority metadata on the page background only. |
+| `blog-text-on-surface` | `--pill-foreground` / `#c2ccd6`  | Card excerpts, quotes, and metadata on elevated surfaces.         |
+| `blog-border`          | `--border` / `#1e2129`           | Card edges, dividers, and structural rules.                       |
+| `blog-border-strong`   | `--code-border` / `#23262f`      | Code/media/table boundaries.                                      |
+| `blog-accent`          | `--primary` / `#f6a823`          | Links, CTA, focus, featured marker, blockquote rule.              |
+| `blog-accent-code`     | `--code-string` / `#47d1a3`      | Code/output/status accent.                                        |
+| `blog-accent-info`     | `--code-property` / `#85b3e0`    | Category and property/type accent.                                |
+| `blog-code-bg`         | `--code-bg` / `#0e1015`          | Inline and block code surface.                                    |
 
 ## 3. Semantic CSS tokens
 
@@ -153,16 +153,16 @@ Cards should have `24px` desktop padding and `20px` mobile padding, `6px` radius
 
 ## 6. Desktop and mobile typography
 
-| Element | Desktop | Mobile |
-|---|---|---|
+| Element       | Desktop                                       | Mobile                                                            |
+| ------------- | --------------------------------------------- | ----------------------------------------------------------------- |
 | Article title | Space Grotesk 48px/1.1, weight 700, `-0.02em` | Space Grotesk 34–36px/1.12, weight 700; natural wrapping at 390px |
-| Article dek | Inter 18px/1.55 | Inter 17px/1.55 |
-| Body prose | Inter 16px/28px, weight 400 | Inter 16px/26px; preserve 16px at narrow widths |
-| Section `h2` | Space Grotesk 28px/1.2, weight 700 | 24px/1.25 |
-| Section `h3` | Space Grotesk 21px/1.3, weight 600 | 19px/1.35 |
-| Metadata | JetBrains Mono 12px/18px | JetBrains Mono 11px/17px, wrapping allowed |
-| Inline code | JetBrains Mono `0.78em` | Same relative scale; never below 12px rendered size |
-| Listing title | Space Grotesk 22px/1.25 | 20px/1.3 |
+| Article dek   | Inter 18px/1.55                               | Inter 17px/1.55                                                   |
+| Body prose    | Inter 16px/28px, weight 400                   | Inter 16px/26px; preserve 16px at narrow widths                   |
+| Section `h2`  | Space Grotesk 28px/1.2, weight 700            | 24px/1.25                                                         |
+| Section `h3`  | Space Grotesk 21px/1.3, weight 600            | 19px/1.35                                                         |
+| Metadata      | JetBrains Mono 12px/18px                      | JetBrains Mono 11px/17px, wrapping allowed                        |
+| Inline code   | JetBrains Mono `0.78em`                       | Same relative scale; never below 12px rendered size               |
+| Listing title | Space Grotesk 22px/1.25                       | 20px/1.3                                                          |
 
 Use `font-display: swap` through the existing font loading strategy and provide the current families as fallbacks. Keep headings foreground-colored and avoid using all-caps for article titles.
 
