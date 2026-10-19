@@ -7,7 +7,7 @@ export const siteData = {
   email: "hello@syedahamed.in",
   linkedin: "https://www.linkedin.com/in/syed-aashiq-ahamed-6180a9187/",
   github: "https://github.com/SyedAHAMED29",
-  resumePath: "/Resume.SyedAashiqAhamed.pdf",
+  resumePath: "/Resume-Syed.pdf",
   status: "Currently: building web, mobile, and AI-powered products",
   companies: {
     beamer: "https://www.getbeamer.com",
