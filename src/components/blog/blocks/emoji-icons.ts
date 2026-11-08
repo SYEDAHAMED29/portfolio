@@ -73,6 +73,64 @@ export const emojiIcons = {
     <circle cx="19.5" cy="16" r="1.8" fill="${AMBER}"/>
     <circle cx="12.5" cy="23" r="1.6" fill="${AMBER}"/>
     <circle cx="19.5" cy="23" r="1.6" fill="${AMBER}"/>`,
+
+  rocket: `
+    <g transform="rotate(45 16 16)">
+      <path d="M13 23h6l-1.4 6h-3.2z" fill="${AMBER}"/>
+      <path d="M14.4 23h3.2l-.8 3.6h-1.6z" fill="${AMBER_LIGHT}"/>
+      <path d="M10.2 17.5 6 22.5v3.5l4.2-2.2zM21.8 17.5l4.2 5v3.5l-4.2-2.2z" fill="${LAVENDER}"/>
+      <path d="M16 2.5c4.2 3.2 6.2 8.3 6.2 13.5V23H9.8v-7c0-5.2 2-10.3 6.2-13.5z" fill="${PAPER}"/>
+      <path d="M16 2.5c1.9 1.4 3.4 3.3 4.4 5.5h-8.8c1-2.2 2.5-4.1 4.4-5.5z" fill="${LAVENDER}"/>
+      <circle cx="16" cy="13" r="2.9" fill="${SKY}" stroke="${STEEL}" stroke-width="1.3"/>
+    </g>`,
+
+  plug: `
+    <path d="M12.5 4.5v6M19.5 4.5v6" stroke="${STEEL}" stroke-width="2.4" stroke-linecap="round"/>
+    <rect x="9" y="10" width="14" height="10" rx="3" fill="${LAVENDER}"/>
+    <path d="M13 13.5h6" stroke="${PAPER}" stroke-width="1.4" stroke-linecap="round" opacity=".7"/>
+    <path d="M16 20v3.5c0 3-2.5 4.5-6.5 4.5" stroke="${AMBER}" stroke-width="2.6" stroke-linecap="round" fill="none"/>
+    <path d="M25.5 6.5l1.2 2.4 2.4 1.2-2.4 1.2-1.2 2.4-1.2-2.4-2.4-1.2 2.4-1.2z" fill="${MINT}"/>`,
+
+  hourglass: `
+    <rect x="7" y="2.5" width="18" height="3" rx="1.5" fill="${STEEL}"/>
+    <rect x="7" y="26.5" width="18" height="3" rx="1.5" fill="${STEEL}"/>
+    <path d="M9.5 5.5h13c0 5-3.7 7.6-5.2 10.5 1.5 2.9 5.2 5.5 5.2 10.5h-13c0-5 3.7-7.6 5.2-10.5C13.2 13.1 9.5 10.5 9.5 5.5z" fill="${PAPER}" stroke="${STEEL}" stroke-width="1.2"/>
+    <path d="M11.6 8h8.8c-.7 2.4-2.7 4-4.4 5.6-1.7-1.6-3.7-3.2-4.4-5.6z" fill="${AMBER}"/>
+    <path d="M16 15.5v6" stroke="${AMBER}" stroke-width="1.2" stroke-linecap="round"/>
+    <path d="M11 25c1-2.6 3-3.8 5-3.8s4 1.2 5 3.8z" fill="${AMBER}"/>`,
+
+  thinking: `
+    <circle cx="16" cy="15" r="13" fill="${AMBER}"/>
+    <ellipse cx="11.5" cy="12.5" rx="1.6" ry="2.1" fill="${INK}"/>
+    <ellipse cx="20.5" cy="11.5" rx="1.6" ry="2.1" fill="${INK}"/>
+    <path d="M18.4 7.6c1.5-1 3.2-1 4.5 0" stroke="${INK}" stroke-width="1.4" stroke-linecap="round" fill="none"/>
+    <path d="M12.5 20.6l6.5-1.2" stroke="${INK}" stroke-width="1.7" stroke-linecap="round"/>
+    <path d="M6.5 28.5c-.6-2.6.6-4.6 2.8-5.4l4-1.4a1.9 1.9 0 0 1 1.3 3.6l-2 .7c1.2.4 1.8 1.4 1.6 2.5z" fill="${AMBER_DARK}"/>`,
+
+  puzzle: `
+    <path d="M6 10h6a3 3 0 1 1 6 0h6v6a3 3 0 1 1 0 6v6H6v-6a3 3 0 1 0 0-6z" fill="${LAVENDER}"/>
+    <path d="M9 13.5h4" stroke="${PAPER}" stroke-width="1.4" stroke-linecap="round" opacity=".7"/>`,
+
+  flask: `
+    <rect x="11.5" y="2.5" width="9" height="2.4" rx="1.2" fill="${STEEL}"/>
+    <path d="M13.2 4.9h5.6v5.6l6.4 13.2a3.2 3.2 0 0 1-2.9 4.6H9.7a3.2 3.2 0 0 1-2.9-4.6l6.4-13.2z" fill="${PAPER}" stroke="${STEEL}" stroke-width="1.3"/>
+    <path d="M9.6 19.5h12.8l2.3 4.7a1.9 1.9 0 0 1-1.7 2.8H9a1.9 1.9 0 0 1-1.7-2.8z" fill="${MINT}"/>
+    <circle cx="14" cy="23" r="1.3" fill="${PAPER}"/>
+    <circle cx="18.6" cy="24.6" r="1" fill="${PAPER}"/>
+    <circle cx="17.5" cy="16.5" r="1" fill="${MINT}"/>`,
+
+  check: `
+    <circle cx="16" cy="16" r="14" fill="${MINT}"/>
+    <path d="M9.5 16.5l4.4 4.4 8.6-9.2" stroke="${PAPER}" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>`,
+
+  snail: `
+    <path d="M3 26.5c0-2 1.4-3.3 3.4-3.3h17.4c2.4 0 4.3-1 5.4-2.8.6 3.6-1.7 6.1-5.4 6.1z" fill="${AMBER_LIGHT}"/>
+    <circle cx="6.5" cy="21.5" r="3" fill="${AMBER_LIGHT}"/>
+    <path d="M5.8 19 4.6 14M7.6 19l1.3-4.8" stroke="${AMBER_DARK}" stroke-width="1.3" stroke-linecap="round"/>
+    <circle cx="4.5" cy="13.7" r="1.1" fill="${INK}"/>
+    <circle cx="9" cy="13.9" r="1.1" fill="${INK}"/>
+    <circle cx="18" cy="16" r="8" fill="${LAVENDER}"/>
+    <path d="M18 12.2a3.8 3.8 0 1 1-3.8 3.8 2.5 2.5 0 0 1 2.5-2.5 1.3 1.3 0 0 1 1.3 1.3" stroke="${LAVENDER_DEEP}" stroke-width="1.6" stroke-linecap="round" fill="none"/>`,
 } as const;
 
 export type EmojiName = keyof typeof emojiIcons;

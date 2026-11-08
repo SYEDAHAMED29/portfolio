@@ -1,0 +1,787 @@
+---
+/**
+ * The dev feedback loop, before and after vite-dev.jsp.
+ *
+ * The code editor is the control: picking a colour types a new value into
+ * SaveButton.tsx and "saves" it. Both lanes then react to the same edit:
+ *   Before: build → rm → cp → full reload. Slow, and the reload wipes the
+ *           half-typed draft in the page.
+ *   After:  a Vite HMR update. The button changes in place and React Fast
+ *           Refresh keeps the draft.
+ * Each lane keeps score: time spent waiting and drafts lost. A new edit
+ * during a build restarts the Before lane, just like real life.
+ */
+
+const colors = [
+  { name: "blue", value: "#2563eb" },
+  { name: "green", value: "#16a34a" },
+  { name: "purple", value: "#7c3aed" },
+  { name: "pink", value: "#db2777" },
+];
+
+const lanes = [
+  { key: "before", kicker: "Before", title: "Build, copy, reload" },
+  { key: "after", kicker: "After", title: "Vite + vite-dev.jsp" },
+] as const;
+
+const DRAFT = "Write release notes";
+
+// One exact line of code (set:html keeps the spacing precise).
+const codeLine = [
+  `<span class="ln">1</span>`,
+  `<span class="tok-tag">&lt;Button</span> `,
+  `<span class="tok-attr">color</span>=`,
+  `<span class="tok-str">"<span data-value>blue</span><span class="caret" data-caret></span>"</span>`,
+  `<span class="tok-tag">&gt;</span>Save<span class="tok-tag">&lt;/Button&gt;</span>`,
+].join("");
+---
+
+<figure class="blog-figure reload-demo" data-reload-demo>
+  <p class="reload-hint">
+    Type something in either task box if you like, then change the button colour
+    in the code.
+  </p>
+
+  <div class="editor">
+    <div class="editor-bar">
+      <span class="editor-tab">
+        SaveButton.tsx<span class="dirty" data-dirty aria-hidden="true"></span>
+      </span>
+      <div class="swatches" role="group" aria-label="Change the button colour">
+        {
+          colors.map((color, index) => (
+            <button
+              type="button"
+              class="swatch"
+              style={`--swatch: ${color.value}`}
+              data-color={color.value}
+              data-name={color.name}
+              aria-pressed={index === 0 ? "true" : "false"}
+              aria-label={`Change the colour to ${color.name}`}
+            />
+          ))
+        }
+      </div>
+    </div>
+    <div class="editor-code" aria-hidden="true" set:html={codeLine} />
+  </div>
+
+  <div class="lanes">
+    {
+      lanes.map((lane) => (
+        <section
+          class={`lane lane-${lane.key}`}
+          data-lane={lane.key}
+          aria-label={lane.kicker}
+        >
+          <header class="lane-head">
+            <span>
+              <span class="lane-kicker">{lane.kicker}</span>
+              <span class="lane-title">{lane.title}</span>
+            </span>
+            <span class="stopwatch" data-clock>
+              0.0s
+            </span>
+          </header>
+
+          <div class="browser" data-browser>
+            <div class="browser-bar" aria-hidden="true">
+              <span class="reload-icon" data-spin>
+                ↻
+              </span>
+              <span class="browser-url">/overview</span>
+            </div>
+            <div class="browser-page">
+              <label class="draft-label" for={`reload-draft-${lane.key}`}>
+                New task
+              </label>
+              <input
+                id={`reload-draft-${lane.key}`}
+                class="draft"
+                type="text"
+                value={DRAFT}
+                autocomplete="off"
+                data-draft
+              />
+              <div class="page-row">
+                <span class="preview-button" style="--btn: #2563eb" data-button>
+                  Save
+                </span>
+                <span class="flag" data-flag />
+              </div>
+            </div>
+            <div class="blank" data-blank aria-hidden="true">
+              <span class="spinner" />
+            </div>
+          </div>
+
+          <div class="terminal" data-log aria-hidden="true">
+            <span class="log-idle">waiting for changes…</span>
+          </div>
+
+          <dl class="score">
+            <div>
+              <dt>Waited</dt>
+              <dd data-waited>0s</dd>
+            </div>
+            <div>
+              <dt>Drafts lost</dt>
+              <dd data-lost>0</dd>
+            </div>
+          </dl>
+        </section>
+      ))
+    }
+  </div>
+
+  <figcaption>
+    Same edit, two feedback loops. A full reload also throws away whatever state
+    the page had. Timings are compressed for the demo.
+  </figcaption>
+</figure>
+
+<script>
+  import { playSound } from "../../../lib/sound";
+
+  // Real milliseconds in the demo → seconds shown on the stopwatch.
+  const SCALE = 11;
+  const BEFORE_STEPS = [
+    { cmd: "$ npm run build", ms: 2200, done: "✓ built" },
+    { cmd: "$ rm -rf ../java-app/react-app", ms: 350 },
+    { cmd: "$ cp -r dist ../java-app/react-app", ms: 450 },
+    { cmd: "↻ reloading /overview…", ms: 650 },
+  ];
+  const HMR_MS = 150;
+  const TYPE_MS = 28;
+
+  const wait = (ms: number) =>
+    new Promise((resolve) => window.setTimeout(resolve, ms));
+
+  const formatSeconds = (seconds: number) => {
+    if (seconds < 60) return `${seconds.toFixed(seconds < 10 ? 1 : 0)}s`;
+    const minutes = Math.floor(seconds / 60);
+    return `${minutes}m ${String(Math.round(seconds % 60)).padStart(2, "0")}s`;
+  };
+
+  const clockTime = () =>
+    new Date().toLocaleTimeString("en-GB", { hour12: false });
+
+  for (const demo of document.querySelectorAll<HTMLElement>(
+    "[data-reload-demo]",
+  )) {
+    const swatches = [
+      ...demo.querySelectorAll<HTMLButtonElement>("[data-color]"),
+    ];
+    const valueEl = demo.querySelector<HTMLElement>("[data-value]");
+    const dirty = demo.querySelector<HTMLElement>("[data-dirty]");
+    const caret = demo.querySelector<HTMLElement>("[data-caret]");
+    const laneEls = {
+      before: demo.querySelector<HTMLElement>('[data-lane="before"]'),
+      after: demo.querySelector<HTMLElement>('[data-lane="after"]'),
+    };
+    if (!valueEl || !dirty || !caret || !laneEls.before || !laneEls.after)
+      continue;
+
+    const parts = (lane: HTMLElement) => ({
+      lane,
+      clock: lane.querySelector<HTMLElement>("[data-clock]")!,
+      browser: lane.querySelector<HTMLElement>("[data-browser]")!,
+      draft: lane.querySelector<HTMLInputElement>("[data-draft]")!,
+      button: lane.querySelector<HTMLElement>("[data-button]")!,
+      flag: lane.querySelector<HTMLElement>("[data-flag]")!,
+      log: lane.querySelector<HTMLElement>("[data-log]")!,
+      waited: lane.querySelector<HTMLElement>("[data-waited]")!,
+      lost: lane.querySelector<HTMLElement>("[data-lost]")!,
+    });
+    const before = parts(laneEls.before);
+    const after = parts(laneEls.after);
+
+    const score = { before: { waited: 0, lost: 0 }, after: { waited: 0 } };
+    let typing = 0;
+    let beforeRun = 0;
+    let beforeStart = 0;
+    let clockTimer = 0;
+
+    // Terminal helpers
+    const logLine = (log: HTMLElement, text: string, tone = "", keep = 4) => {
+      log.querySelector(".log-idle")?.remove();
+      const line = document.createElement("span");
+      line.className = `log-line ${tone}`;
+      line.textContent = text;
+      log.append(line);
+      while (log.children.length > keep) log.firstElementChild?.remove();
+      return line;
+    };
+
+    const showFlag = (flag: HTMLElement, text: string, tone: string) => {
+      flag.textContent = text;
+      flag.dataset.tone = tone;
+      flag.classList.remove("is-on");
+      void flag.offsetWidth;
+      flag.classList.add("is-on");
+    };
+
+    // Before lane: the stopwatch runs while the build pipeline does.
+    const stopBeforeClock = () => {
+      if (!beforeStart) return;
+      window.clearInterval(clockTimer);
+      const elapsed = ((performance.now() - beforeStart) / 1000) * SCALE;
+      score.before.waited += elapsed;
+      before.waited.textContent = formatSeconds(score.before.waited);
+      beforeStart = 0;
+      return elapsed;
+    };
+
+    const runBefore = async (color: string) => {
+      stopBeforeClock();
+      const run = ++beforeRun;
+      before.lane.dataset.busy = "true";
+      before.log.replaceChildren();
+      beforeStart = performance.now();
+      clockTimer = window.setInterval(() => {
+        const elapsed = ((performance.now() - beforeStart) / 1000) * SCALE;
+        before.clock.textContent = formatSeconds(elapsed);
+      }, 60);
+
+      for (const step of BEFORE_STEPS) {
+        if (run !== beforeRun) return;
+        const line = logLine(before.log, step.cmd, "is-running");
+        const reload = step === BEFORE_STEPS.at(-1);
+        if (reload) before.browser.dataset.state = "reloading";
+        await wait(step.ms);
+        if (run !== beforeRun) return;
+        line.classList.remove("is-running");
+        if (step.done) logLine(before.log, step.done, "is-ok");
+      }
+
+      // The full reload: fresh page, new colour, and the draft is gone.
+      const hadDraft = before.draft.value.trim().length > 0;
+      before.draft.value = "";
+      before.button.style.setProperty("--btn", color);
+      before.browser.dataset.state = "";
+      before.lane.dataset.busy = "false";
+      stopBeforeClock();
+      if (hadDraft) {
+        before.draft.placeholder = "Your draft was here…";
+        score.before.lost++;
+        before.lost.textContent = String(score.before.lost);
+        showFlag(before.flag, "Draft lost", "bad");
+        playSound("break");
+      } else {
+        showFlag(before.flag, "Reloaded", "muted");
+        playSound("tick");
+      }
+    };
+
+    const runAfter = async (color: string) => {
+      after.lane.dataset.busy = "true";
+      after.clock.textContent = "0.0s";
+      await wait(HMR_MS);
+      logLine(
+        after.log,
+        `${clockTime()} [vite] hmr update /src/SaveButton.tsx`,
+        "is-hmr",
+      );
+      after.button.style.setProperty("--btn", color);
+      after.button.classList.remove("is-flash");
+      void after.button.offsetWidth;
+      after.button.classList.add("is-flash");
+      const seconds = (HMR_MS / 1000) * 2;
+      after.clock.textContent = formatSeconds(seconds);
+      score.after.waited += seconds;
+      after.waited.textContent = formatSeconds(score.after.waited);
+      after.lane.dataset.busy = "false";
+      showFlag(
+        after.flag,
+        after.draft.value.trim() ? "State kept ✓" : "Updated ✓",
+        "good",
+      );
+      playSound("pop");
+    };
+
+    // Editor: delete the old value, type the new one, then "save".
+    const typeValue = async (name: string) => {
+      const run = ++typing;
+      dirty.classList.add("is-on");
+      caret.classList.add("is-on");
+      while (valueEl.textContent) {
+        if (run !== typing) return false;
+        valueEl.textContent = valueEl.textContent.slice(0, -1);
+        await wait(TYPE_MS);
+      }
+      for (const char of name) {
+        if (run !== typing) return false;
+        valueEl.textContent += char;
+        await wait(TYPE_MS);
+      }
+      await wait(140);
+      if (run !== typing) return false;
+      dirty.classList.remove("is-on");
+      caret.classList.remove("is-on");
+      return true;
+    };
+
+    for (const swatch of swatches) {
+      swatch.addEventListener("click", async () => {
+        swatches.forEach((s) =>
+          s.setAttribute("aria-pressed", String(s === swatch)),
+        );
+        const saved = await typeValue(swatch.dataset.name ?? "blue");
+        if (!saved) return;
+        const color = swatch.dataset.color ?? "#2563eb";
+        void runBefore(color);
+        void runAfter(color);
+      });
+    }
+  }
+</script>
+
+<style>
+  .reload-hint {
+    margin: 0 0 0.75rem;
+    color: var(--blog-text-on-surface);
+    font-size: 0.9375rem;
+    line-height: 1.5;
+  }
+
+  /* Code editor (dark, the control for the whole demo) */
+  .editor {
+    overflow: hidden;
+    border-radius: 0.5rem;
+    background: #16161a;
+    margin-bottom: 1rem;
+  }
+
+  .editor-bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    background: rgb(255 255 255 / 0.04);
+    padding: 0.5rem 0.75rem;
+  }
+
+  .editor-tab {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4375rem;
+    color: #d6d3d1;
+    font-size: 0.8125rem;
+  }
+
+  .dirty {
+    width: 0.4375rem;
+    height: 0.4375rem;
+    border-radius: 50%;
+    background: transparent;
+    transition: background-color 150ms ease;
+  }
+
+  .dirty.is-on {
+    background: #f5a524;
+  }
+
+  .swatches {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .swatch {
+    width: 1.375rem;
+    height: 1.375rem;
+    border: 2px solid transparent;
+    border-radius: 50%;
+    background: var(--swatch);
+    background-clip: padding-box;
+    cursor: pointer;
+    transition: transform 150ms ease;
+  }
+
+  .swatch:hover {
+    transform: scale(1.12);
+  }
+
+  .swatch[aria-pressed="true"] {
+    box-shadow:
+      0 0 0 2px #16161a,
+      0 0 0 4px #e7e5e4;
+  }
+
+  .swatch:focus-visible {
+    outline: 2px solid var(--blog-accent);
+    outline-offset: 4px;
+  }
+
+  .editor-code {
+    overflow-x: auto;
+    padding: 0.875rem 1rem 1rem;
+    color: #e7e5e4;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 0.875rem;
+    white-space: nowrap;
+  }
+
+  .editor-code :global(.ln) {
+    margin-right: 1rem;
+    color: #57534e;
+  }
+
+  .editor-code :global(.tok-tag) {
+    color: #f38ba8;
+  }
+
+  .editor-code :global(.tok-attr) {
+    color: #f9c97a;
+  }
+
+  .editor-code :global(.tok-str) {
+    color: #a6e3a1;
+  }
+
+  .editor-code :global(.caret) {
+    display: inline-block;
+    width: 2px;
+    height: 1em;
+    margin-right: -2px;
+    background: transparent;
+    vertical-align: -0.125em;
+  }
+
+  .editor-code :global(.caret.is-on) {
+    background: #e7e5e4;
+  }
+
+  /* Lanes */
+  .lanes {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+  }
+
+  .lane {
+    --lane: #b45309;
+    --lane-soft: #fdf4e7;
+
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    border-radius: 0.75rem;
+    background: #ffffff;
+    color: #1c1917;
+  }
+
+  .lane-after {
+    --lane: #6d5bd0;
+    --lane-soft: #f3f0ff;
+  }
+
+  .lane-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    background: var(--lane-soft);
+    padding: 0.625rem 0.875rem;
+  }
+
+  .lane-kicker {
+    display: block;
+    color: var(--lane);
+    font-size: 0.8125rem;
+    font-weight: 600;
+  }
+
+  .lane-title {
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 700;
+  }
+
+  .stopwatch {
+    min-width: 4.5rem;
+    border-radius: 0.25rem;
+    background: #fff;
+    color: var(--lane);
+    padding: 0.1875rem 0.5rem;
+    font-size: 0.9375rem;
+    font-variant-numeric: tabular-nums;
+    font-weight: 700;
+    text-align: right;
+  }
+
+  .lane[data-busy="true"] .stopwatch {
+    animation: tick 1s steps(2) infinite;
+  }
+
+  @keyframes tick {
+    50% {
+      opacity: 0.6;
+    }
+  }
+
+  /* Mini browser with real state (the draft) */
+  .browser {
+    position: relative;
+    overflow: hidden;
+    margin: 0.875rem 0.875rem 0;
+    border-radius: 0.375rem;
+    background: #f5f4f2;
+  }
+
+  .browser-bar {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: #ebe9e6;
+    padding: 0.3125rem 0.625rem;
+    color: #78716c;
+    font-size: 0.6875rem;
+  }
+
+  .reload-icon {
+    display: inline-block;
+    font-size: 0.8125rem;
+    line-height: 1;
+  }
+
+  .browser[data-state="reloading"] .reload-icon {
+    animation: spin 600ms linear infinite;
+  }
+
+  .browser-page {
+    display: grid;
+    gap: 0.375rem;
+    padding: 0.75rem;
+  }
+
+  .draft-label {
+    color: #57534e;
+    font-size: 0.6875rem;
+    font-weight: 600;
+  }
+
+  .draft {
+    width: 100%;
+    border: 1px solid #d9d5cf;
+    border-radius: 0.25rem;
+    background: #fff;
+    color: #1c1917;
+    padding: 0.375rem 0.5rem;
+    font: inherit;
+    font-size: 0.8125rem;
+  }
+
+  .draft:focus {
+    border-color: var(--lane);
+    outline: 2px solid var(--lane-soft);
+  }
+
+  .page-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-height: 1.75rem;
+  }
+
+  .preview-button {
+    border-radius: 0.25rem;
+    background: var(--btn);
+    color: #fff;
+    padding: 0.3125rem 0.875rem;
+    font-size: 0.75rem;
+    font-weight: 700;
+    transition: background-color 200ms ease;
+  }
+
+  .preview-button.is-flash {
+    animation: hmr-flash 600ms ease;
+  }
+
+  .flag {
+    border-radius: 0.25rem;
+    padding: 0.125rem 0.4375rem;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    opacity: 0;
+  }
+
+  .flag.is-on {
+    animation: flag 2.4s ease forwards;
+  }
+
+  .flag[data-tone="bad"] {
+    background: #fee2e2;
+    color: #b91c1c;
+  }
+
+  .flag[data-tone="good"] {
+    background: var(--lane-soft);
+    color: var(--lane);
+  }
+
+  .flag[data-tone="muted"] {
+    background: #ebe9e6;
+    color: #57534e;
+  }
+
+  /* The blank page during a full reload */
+  .blank {
+    position: absolute;
+    inset: 1.6rem 0 0;
+    display: grid;
+    place-items: center;
+    background: #fff;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 120ms ease;
+  }
+
+  .browser[data-state="reloading"] .blank {
+    opacity: 1;
+  }
+
+  .spinner {
+    width: 1.25rem;
+    height: 1.25rem;
+    border: 2px solid #ebe9e6;
+    border-top-color: var(--lane);
+    border-radius: 50%;
+    animation: spin 700ms linear infinite;
+  }
+
+  /* Terminal */
+  .terminal {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    height: 6.25rem;
+    margin: 0.75rem 0.875rem 0;
+    overflow: hidden;
+    border-radius: 0.375rem;
+    background: #1c1917;
+    padding: 0.5rem 0.625rem;
+    color: #a8a29e;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 0.6875rem;
+    line-height: 1.6;
+  }
+
+  .terminal :global(.log-line) {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    animation: line-in 200ms ease;
+  }
+
+  .terminal :global(.log-line.is-running)::after {
+    content: "▍";
+    margin-left: 0.25rem;
+    color: #f5a524;
+    animation: tick 0.8s steps(2) infinite;
+  }
+
+  .terminal :global(.log-line.is-ok) {
+    color: #86efac;
+  }
+
+  .terminal :global(.log-line.is-hmr) {
+    color: #c4b5fd;
+  }
+
+  .log-idle {
+    color: #57534e;
+  }
+
+  /* Score */
+  .score {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.5rem;
+    margin: 0.75rem 0.875rem 0.875rem;
+  }
+
+  .score div {
+    border-radius: 0.25rem;
+    background: #f5f4f2;
+    padding: 0.4375rem 0.625rem;
+  }
+
+  .score dt {
+    color: #78716c;
+    font-size: 0.6875rem;
+  }
+
+  .score dd {
+    margin: 0;
+    color: var(--lane);
+    font-size: 1.125rem;
+    font-variant-numeric: tabular-nums;
+    font-weight: 700;
+  }
+
+  @keyframes spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  @keyframes hmr-flash {
+    0% {
+      box-shadow: 0 0 0 0 rgb(139 124 240 / 0.7);
+    }
+    100% {
+      box-shadow: 0 0 0 10px rgb(139 124 240 / 0);
+    }
+  }
+
+  @keyframes flag {
+    0% {
+      opacity: 0;
+      transform: translateY(0.25rem);
+    }
+    10%,
+    80% {
+      opacity: 1;
+      transform: none;
+    }
+    100% {
+      opacity: 0;
+    }
+  }
+
+  @keyframes line-in {
+    from {
+      opacity: 0;
+    }
+  }
+
+  @media (max-width: 36rem) {
+    .lanes {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .swatch,
+    .preview-button,
+    .blank {
+      transition: none;
+    }
+
+    .preview-button.is-flash,
+    .lane[data-busy="true"] .stopwatch,
+    .browser[data-state="reloading"] .reload-icon,
+    .spinner,
+    .terminal :global(.log-line),
+    .terminal :global(.log-line.is-running)::after {
+      animation: none;
+    }
+
+    .flag.is-on {
+      animation: none;
+      opacity: 1;
+    }
+  }
+</style>

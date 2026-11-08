@@ -1,0 +1,1012 @@
+---
+/**
+ * "A JSP button opens a React modal", as a radio broadcast.
+ *
+ * Clicking the plain JSP button dispatches bridge:openNewProjectDialog on
+ * window: rings ripple across the whole page. React's listener badge hears
+ * it and the React modal opens. A tuner lets the reader change the name
+ * React listens for; with a mismatched name the broadcast still goes out,
+ * but nothing happens. Two code cards show both sides with the event name
+ * highlighted, turning red when they don't match.
+ */
+import DemoWindow from "./DemoWindow.astro";
+
+const SENT = "bridge:openNewProjectDialog";
+const OTHER = "bridge:openSettings";
+
+const projects = ["Website redesign", "Mobile app launch", "Q3 planning"];
+
+// Static, trusted snippets (rendered with set:html so the highlights work).
+const jspCode = `$("#new-project-button").on("click", () =&gt; {
+  window.dispatchEvent(
+    new CustomEvent(<mark class="name name-send">"${SENT}"</mark>)
+  );
+});`;
+
+const reactCode = `window.addEventListener(
+  <mark class="name name-listen" data-code-listen>"${SENT}"</mark>,
+  () =&gt; setIsModalOpen(true)
+);`;
+---
+
+<figure
+  class="blog-figure bridge-demo"
+  data-bridge-demo
+  data-sent={SENT}
+  data-match="true"
+>
+  <p class="bridge-hint">
+    The <b>New project</b> button is plain JSP. Click it and watch it open a React
+    modal.
+  </p>
+
+  <DemoWindow url="/projects">
+    <div class="stage" data-stage>
+      <div class="jsp-page">
+        <span class="layer-tag">JSP page</span>
+        <div class="legacy-header">
+          <span class="legacy-title">Projects</span>
+          <button type="button" class="legacy-button is-hint" data-create
+            >New project</button
+          >
+        </div>
+        <ul class="project-list" aria-label="Projects">
+          {
+            projects.map((name) => (
+              <li>
+                <span class="project-dot" aria-hidden="true" />
+                {name}
+              </li>
+            ))
+          }
+        </ul>
+      </div>
+
+      <div class="broadcast" aria-hidden="true">
+        <span class="ring" data-ring></span>
+        <span class="ring ring-late" data-ring></span>
+        <span class="event-label" data-event-label>{SENT}</span>
+      </div>
+
+      <div class="listener" data-listener data-state="idle">
+        <span class="listener-icon" aria-hidden="true">⚛</span>
+        <span class="listener-text">
+          React is listening for <code data-listen-name>{SENT}</code>
+        </span>
+        <span class="listener-state" data-listener-state>listening</span>
+      </div>
+
+      <div class="modal-backdrop" data-modal hidden>
+        <div
+          class="modal"
+          role="dialog"
+          aria-modal="false"
+          aria-labelledby="bridge-modal-title"
+        >
+          <div class="modal-head">
+            <div class="modal-title-row">
+              <span id="bridge-modal-title" class="modal-title"
+                >New project</span
+              >
+              <span class="react-tag">
+                <span aria-hidden="true">⚛</span> React component
+              </span>
+            </div>
+            <button
+              type="button"
+              class="modal-close"
+              data-close
+              aria-label="Close modal"
+            >
+              <svg viewBox="0 0 16 16" aria-hidden="true">
+                <path d="M4 4l8 8M12 4l-8 8"></path>
+              </svg>
+            </button>
+          </div>
+
+          <label class="field-label" for="bridge-project-name">Name</label>
+          <input
+            id="bridge-project-name"
+            class="name-input"
+            type="text"
+            placeholder="Untitled project"
+            autocomplete="off"
+            data-name
+          />
+
+          <span class="field-label" id="bridge-template-label">Template</span>
+          <div
+            class="templates"
+            role="group"
+            aria-labelledby="bridge-template-label"
+          >
+            <button
+              type="button"
+              class="template"
+              data-template
+              aria-pressed="true"
+            >
+              <span class="preview preview-board" aria-hidden="true">
+                <span><i></i><i></i></span>
+                <span><i></i></span>
+                <span><i></i><i></i></span>
+              </span>
+              Board
+            </button>
+            <button
+              type="button"
+              class="template"
+              data-template
+              aria-pressed="false"
+            >
+              <span class="preview preview-list" aria-hidden="true">
+                <i></i><i></i><i></i>
+              </span>
+              List
+            </button>
+            <button
+              type="button"
+              class="template"
+              data-template
+              aria-pressed="false"
+            >
+              <span class="preview preview-blank" aria-hidden="true">+</span>
+              Blank
+            </button>
+          </div>
+
+          <div class="modal-actions">
+            <button type="button" class="modal-button" data-close>Cancel</button
+            >
+            <button
+              type="button"
+              class="modal-button modal-button-primary"
+              data-close
+            >
+              Create project
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </DemoWindow>
+
+  <div class="tuner" role="group" aria-label="Event name React listens for">
+    <span class="tuner-label">React listens for</span>
+    <button
+      type="button"
+      class="tuner-option"
+      data-listen={SENT}
+      aria-pressed="true">{SENT}</button
+    >
+    <button
+      type="button"
+      class="tuner-option"
+      data-listen={OTHER}
+      aria-pressed="false">{OTHER}</button
+    >
+  </div>
+
+  <div class="code-pair">
+    <div class="code-card">
+      <span class="code-label code-label-jsp">JSP side · projects.js</span>
+      <pre><code set:html={jspCode} /></pre>
+    </div>
+    <div class="code-card">
+      <span class="code-label code-label-react"
+        >React side · NewProjectModal.tsx</span
+      >
+      <pre><code set:html={reactCode} /></pre>
+    </div>
+  </div>
+
+  <div class="demo-controls">
+    <button type="button" class="demo-button demo-button-ghost" data-reset>
+      Reset
+    </button>
+    <span class="demo-status" data-status aria-live="polite"
+      >Waiting for a click…</span
+    >
+  </div>
+
+  <figcaption>
+    The button and the modal never import each other. They only agree on one
+    event name.
+  </figcaption>
+</figure>
+
+<script>
+  import { playSound } from "../../../lib/sound";
+
+  const wait = (ms: number) =>
+    new Promise((resolve) => window.setTimeout(resolve, ms));
+
+  for (const demo of document.querySelectorAll<HTMLElement>(
+    "[data-bridge-demo]",
+  )) {
+    const stage = demo.querySelector<HTMLElement>("[data-stage]");
+    const create = demo.querySelector<HTMLButtonElement>("[data-create]");
+    const modal = demo.querySelector<HTMLElement>("[data-modal]");
+    const closers = [
+      ...demo.querySelectorAll<HTMLButtonElement>("[data-close]"),
+    ];
+    const nameInput = demo.querySelector<HTMLInputElement>("[data-name]");
+    const templates = [
+      ...demo.querySelectorAll<HTMLButtonElement>("[data-template]"),
+    ];
+    const reset = demo.querySelector<HTMLButtonElement>("[data-reset]");
+    const status = demo.querySelector<HTMLElement>("[data-status]");
+    const listener = demo.querySelector<HTMLElement>("[data-listener]");
+    const listenerState = demo.querySelector<HTMLElement>(
+      "[data-listener-state]",
+    );
+    const listenName = demo.querySelector<HTMLElement>("[data-listen-name]");
+    const codeListen = demo.querySelector<HTMLElement>("[data-code-listen]");
+    const label = demo.querySelector<HTMLElement>("[data-event-label]");
+    const rings = [...demo.querySelectorAll<HTMLElement>("[data-ring]")];
+    const options = [
+      ...demo.querySelectorAll<HTMLButtonElement>("[data-listen]"),
+    ];
+    const sent = demo.dataset.sent ?? "";
+    if (
+      !stage ||
+      !create ||
+      !modal ||
+      !nameInput ||
+      !reset ||
+      !status ||
+      !listener ||
+      !listenerState ||
+      !listenName ||
+      !codeListen ||
+      !label
+    )
+      continue;
+
+    let listeningFor = sent;
+    let busy = false;
+
+    const setListenerState = (state: "idle" | "heard" | "ignored") => {
+      listener.dataset.state = state;
+      listenerState.textContent =
+        state === "heard"
+          ? "heard it ✓"
+          : state === "ignored"
+            ? "not my event"
+            : "listening";
+    };
+
+    const tune = (name: string) => {
+      listeningFor = name;
+      const match = name === sent;
+      demo.dataset.match = String(match);
+      listenName.textContent = name;
+      codeListen.textContent = `"${name}"`;
+      options.forEach((option) =>
+        option.setAttribute(
+          "aria-pressed",
+          String(option.dataset.listen === name),
+        ),
+      );
+      modal.hidden = true;
+      setListenerState("idle");
+      status.textContent = match
+        ? "Names match. Click New project."
+        : "Names don’t match now. Click New project and see what happens.";
+    };
+
+    // Rings start from the button, wherever it sits in the layout.
+    const aimAtButton = () => {
+      const s = stage.getBoundingClientRect();
+      const b = create.getBoundingClientRect();
+      stage.style.setProperty("--x", `${b.left + b.width / 2 - s.left}px`);
+      stage.style.setProperty("--y", `${b.top + b.height / 2 - s.top}px`);
+    };
+
+    const broadcast = () => {
+      aimAtButton();
+      for (const el of [...rings, label]) {
+        el.classList.remove("is-playing");
+        void el.offsetWidth;
+        el.classList.add("is-playing");
+      }
+    };
+
+    create.addEventListener("click", async () => {
+      if (busy) return;
+      busy = true;
+      create.classList.remove("is-hint");
+      modal.hidden = true;
+      setListenerState("idle");
+      status.textContent = `JSP sent ${sent} on window…`;
+      playSound("tick");
+      broadcast();
+      await wait(750);
+
+      if (listeningFor === sent) {
+        setListenerState("heard");
+        playSound("pop");
+        status.textContent =
+          "React was listening for that exact name, so it opened the modal.";
+        await wait(250);
+        nameInput.value = "";
+        modal.hidden = false;
+        nameInput.focus();
+      } else {
+        setListenerState("ignored");
+        status.textContent = `The event went out, but React is listening for ${listeningFor}. Names must match, so nothing happens.`;
+      }
+      busy = false;
+    });
+
+    options.forEach((option) =>
+      option.addEventListener("click", () =>
+        tune(option.dataset.listen ?? sent),
+      ),
+    );
+
+    const closeModal = () => {
+      modal.hidden = true;
+      create.focus();
+    };
+    closers.forEach((button) => button.addEventListener("click", closeModal));
+    templates.forEach((template) =>
+      template.addEventListener("click", () =>
+        templates.forEach((other) =>
+          other.setAttribute("aria-pressed", String(other === template)),
+        ),
+      ),
+    );
+    modal.addEventListener("keydown", (event) => {
+      if (event.key === "Escape") closeModal();
+    });
+
+    reset.addEventListener("click", () => {
+      tune(sent);
+      rings.forEach((ring) => ring.classList.remove("is-playing"));
+      label.classList.remove("is-playing");
+      create.classList.add("is-hint");
+      status.textContent = "Waiting for a click…";
+      create.focus();
+    });
+  }
+</script>
+
+<style>
+  .bridge-hint {
+    margin: 0 0 0.75rem;
+    color: var(--blog-text-on-surface);
+    font-size: 0.9375rem;
+    line-height: 1.5;
+  }
+
+  .bridge-hint b {
+    color: var(--blog-text);
+  }
+
+  /* Stage: the page, plus the layers that sit on top of it */
+  .stage {
+    --x: 50%;
+    --y: 50%;
+    position: relative;
+    overflow: hidden;
+    min-height: 23rem;
+    padding: 1.5rem 1.5rem 5rem;
+  }
+
+  .jsp-page {
+    border-radius: 0.25rem;
+    background: var(--demo-jsp-soft);
+    padding: 0.875rem 1rem 1rem;
+  }
+
+  .layer-tag {
+    display: inline-block;
+    margin-bottom: 0.625rem;
+    color: var(--demo-jsp);
+    font-family: var(--demo-font-ui);
+    font-size: 0.8125rem;
+    font-weight: 600;
+  }
+
+  .legacy-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .legacy-title {
+    font-size: 1.0625rem;
+    font-weight: 700;
+  }
+
+  .legacy-button {
+    position: relative;
+    z-index: 2;
+    border: 0;
+    border-radius: 0.25rem;
+    background: var(--demo-jsp);
+    color: #fff;
+    cursor: pointer;
+    padding: 0.375rem 0.875rem;
+    font-size: 0.8125rem;
+    font-weight: 700;
+  }
+
+  .legacy-button.is-hint {
+    animation: hint-pulse 1.6s ease-in-out infinite;
+  }
+
+  .legacy-button:focus-visible,
+  .modal-close:focus-visible {
+    outline: 2px solid #8b7cf0;
+    outline-offset: 2px;
+  }
+
+  @keyframes hint-pulse {
+    0%,
+    100% {
+      box-shadow: 0 0 0 0 rgb(180 83 9 / 0.45);
+    }
+    50% {
+      box-shadow: 0 0 0 6px rgb(180 83 9 / 0);
+    }
+  }
+
+  .project-list {
+    display: grid;
+    gap: 0.375rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .project-list li {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 0;
+    border-radius: 0.25rem;
+    background: #fff;
+    padding: 0.4375rem 0.625rem;
+    font-size: 0.8125rem;
+  }
+
+  .project-dot {
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 50%;
+    background: #f0b25a;
+  }
+
+  /* The broadcast: rings rippling out over the whole page from the button */
+  .broadcast {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+  }
+
+  .ring {
+    position: absolute;
+    top: var(--y);
+    left: var(--x);
+    width: 1rem;
+    height: 1rem;
+    border: 2px solid #d97706;
+    border-radius: 50%;
+    opacity: 0;
+    transform: translate(-50%, -50%);
+  }
+
+  .ring.is-playing {
+    animation: ring-out 900ms ease-out forwards;
+  }
+
+  .ring-late.is-playing {
+    animation-delay: 160ms;
+  }
+
+  @keyframes ring-out {
+    0% {
+      width: 1rem;
+      height: 1rem;
+      opacity: 0.9;
+    }
+    100% {
+      width: 70rem;
+      height: 70rem;
+      opacity: 0;
+    }
+  }
+
+  .event-label {
+    position: absolute;
+    top: var(--y);
+    left: var(--x);
+    border-radius: 0.25rem;
+    background: #b45309;
+    color: #fff;
+    padding: 0.1875rem 0.625rem;
+    font-family: var(--demo-font-ui);
+    font-size: 0.6875rem;
+    opacity: 0;
+    transform: translate(-80%, 0.75rem);
+    white-space: nowrap;
+  }
+
+  .event-label.is-playing {
+    animation: label-float 1100ms ease-out forwards;
+  }
+
+  @keyframes label-float {
+    0% {
+      opacity: 0;
+      transform: translate(-80%, 0.75rem);
+    }
+    20% {
+      opacity: 1;
+      transform: translate(-80%, 1.5rem);
+    }
+    80% {
+      opacity: 1;
+      transform: translate(-80%, 1.75rem);
+    }
+    100% {
+      opacity: 0;
+      transform: translate(-80%, 2rem);
+    }
+  }
+
+  /* React's listener badge */
+  .listener {
+    position: absolute;
+    right: 1.5rem;
+    bottom: 1.25rem;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    max-width: calc(100% - 2.5rem);
+    border-radius: 0.25rem;
+    background: var(--demo-react-soft);
+    padding: 0.375rem 0.5rem 0.375rem 0.625rem;
+    font-size: 0.75rem;
+    transition: background-color 200ms ease;
+  }
+
+  .listener-icon {
+    color: #8b7cf0;
+    font-size: 1rem;
+    line-height: 1;
+  }
+
+  .listener-text {
+    min-width: 0;
+    color: var(--demo-text);
+  }
+
+  .listener-text code {
+    border-radius: 0;
+    background: none;
+    color: var(--demo-react);
+    padding: 0;
+    font-family: var(--demo-font-ui);
+    font-size: 0.6875rem;
+    font-weight: 700;
+    overflow-wrap: anywhere;
+  }
+
+  .listener-state {
+    flex-shrink: 0;
+    border-radius: 0.25rem;
+    background: var(--demo-bg);
+    color: var(--demo-muted);
+    padding: 0.125rem 0.5rem;
+    font-family: var(--demo-font-ui);
+    font-size: 0.8125rem;
+    font-weight: 400;
+  }
+
+  .listener[data-state="idle"] .listener-state::before {
+    content: "● ";
+    color: #8b7cf0;
+    animation: blink 1.2s ease-in-out infinite;
+  }
+
+  .listener[data-state="heard"] {
+    background: #e6e0ff;
+  }
+
+  .listener[data-state="heard"] .listener-state {
+    background: var(--demo-react);
+    color: #fff;
+  }
+
+  .listener[data-state="ignored"] {
+    animation: shake 400ms ease;
+  }
+
+  .listener[data-state="ignored"] .listener-state {
+    background: #fee2e2;
+    color: #b91c1c;
+  }
+
+  .bridge-demo[data-match="false"] .listener-text code {
+    color: #b91c1c;
+  }
+
+  @keyframes blink {
+    50% {
+      opacity: 0.25;
+    }
+  }
+
+  @keyframes shake {
+    20%,
+    60% {
+      transform: translateX(-4px);
+    }
+    40%,
+    80% {
+      transform: translateX(4px);
+    }
+  }
+
+  /* The React modal, over the whole page */
+  .modal-backdrop {
+    position: absolute;
+    inset: 0;
+    z-index: 3;
+    display: grid;
+    place-items: center;
+    background: rgb(28 25 23 / 0.35);
+    animation: fade-in 200ms ease;
+  }
+
+  .modal-backdrop[hidden] {
+    display: none;
+  }
+
+  .modal {
+    width: min(92%, 23rem);
+    border-radius: 0.5rem;
+    background: #fff;
+    box-shadow:
+      0 1px 2px rgb(28 25 23 / 0.08),
+      0 1rem 2.5rem rgb(28 25 23 / 0.22);
+    padding: 1.125rem 1.25rem 1rem;
+    animation: modal-in 280ms var(--demo-ease-pop);
+  }
+
+  .modal-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1rem;
+  }
+
+  .react-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    border-radius: 0.25rem;
+    background: var(--demo-react-soft);
+    color: var(--demo-react);
+    padding: 0.0625rem 0.4375rem;
+    font-size: 0.6875rem;
+    font-weight: 600;
+  }
+
+  .modal-title-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .modal-title {
+    display: block;
+    font-size: 1.0625rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+  }
+
+  .modal-close {
+    display: grid;
+    width: 1.75rem;
+    height: 1.75rem;
+    flex-shrink: 0;
+    place-items: center;
+    border: 0;
+    border-radius: 0.25rem;
+    background: transparent;
+    color: var(--demo-muted);
+    cursor: pointer;
+    padding: 0;
+  }
+
+  .modal-close:hover {
+    background: var(--demo-surface);
+  }
+
+  .modal-close svg {
+    width: 0.875rem;
+    height: 0.875rem;
+    fill: none;
+    stroke: currentColor;
+    stroke-linecap: round;
+    stroke-width: 1.75;
+  }
+
+  .field-label {
+    display: block;
+    margin-bottom: 0.375rem;
+    color: var(--demo-muted);
+    font-size: 0.75rem;
+    font-weight: 600;
+  }
+
+  .name-input {
+    width: 100%;
+    margin: 0 0 0.875rem;
+    border: 1px solid var(--demo-border-strong);
+    border-radius: 0.25rem;
+    background: #fff;
+    color: var(--demo-text);
+    padding: 0.4375rem 0.625rem;
+    font: inherit;
+    font-size: 0.8125rem;
+  }
+
+  .name-input::placeholder {
+    color: #a8a29e;
+  }
+
+  .name-input:focus {
+    border-color: var(--demo-react);
+    outline: 2px solid var(--demo-react-soft);
+  }
+
+  .templates {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.5rem;
+  }
+
+  .template {
+    display: grid;
+    gap: 0.375rem;
+    border: 0;
+    border-radius: 0.25rem;
+    background: var(--demo-surface);
+    color: var(--demo-text);
+    cursor: pointer;
+    padding: 0.5rem 0.5rem 0.4375rem;
+    font: inherit;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-align: left;
+    transition: background-color 150ms ease;
+  }
+
+  .template[aria-pressed="true"] {
+    background: var(--demo-react-soft);
+    color: var(--demo-react);
+  }
+
+  .template:focus-visible,
+  .modal-button:focus-visible {
+    outline: 2px solid #8b7cf0;
+    outline-offset: 2px;
+  }
+
+  /* Tiny drawings of each template */
+  .preview {
+    display: flex;
+    height: 1.875rem;
+    gap: 0.1875rem;
+    border-radius: 0.1875rem;
+    background: #fff;
+    padding: 0.25rem;
+  }
+
+  .preview i {
+    display: block;
+    border-radius: 0.125rem;
+    background: #e7e5e4;
+  }
+
+  .template[aria-pressed="true"] .preview i {
+    background: #d6ccfd;
+  }
+
+  .preview-board span {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: 0.1875rem;
+  }
+
+  .preview-board i {
+    height: 0.375rem;
+  }
+
+  .preview-list {
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  .preview-list i {
+    height: 0.25rem;
+  }
+
+  .preview-list i:nth-child(2) {
+    width: 75%;
+  }
+
+  .preview-list i:nth-child(3) {
+    width: 55%;
+  }
+
+  .preview-blank {
+    align-items: center;
+    justify-content: center;
+    color: #a8a29e;
+    font-size: 1rem;
+    font-weight: 400;
+  }
+
+  .modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5rem;
+    margin-top: 1.125rem;
+  }
+
+  .modal-button {
+    border: 0;
+    border-radius: 0.25rem;
+    background: var(--demo-surface);
+    color: var(--demo-text);
+    cursor: pointer;
+    padding: 0.4375rem 0.875rem;
+    font: inherit;
+    font-size: 0.8125rem;
+    font-weight: 600;
+  }
+
+  .modal-button-primary {
+    background: var(--demo-react);
+    color: #fff;
+  }
+
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+    }
+  }
+
+  @keyframes modal-in {
+    from {
+      opacity: 0;
+      transform: translateY(0.75rem) scale(0.94);
+    }
+  }
+
+  /* Tuner (dark, outside the window) */
+  .tuner {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 1rem;
+  }
+
+  .tuner-label {
+    margin-right: 0.25rem;
+    color: var(--blog-text-muted);
+    font-family: var(--demo-font-ui);
+    font-size: 0.875rem;
+  }
+
+  .tuner-option {
+    border: 0;
+    border-radius: 0.25rem;
+    background: rgb(255 255 255 / 0.06);
+    color: var(--blog-text-muted);
+    cursor: pointer;
+    padding: 0.25rem 0.75rem;
+    font-family: var(--demo-font-ui);
+    font-size: 0.75rem;
+  }
+
+  .tuner-option[aria-pressed="true"] {
+    background: rgb(188 168 250 / 0.16);
+    color: #bca8fa;
+  }
+
+  .tuner-option:focus-visible {
+    outline: 2px solid var(--blog-accent);
+    outline-offset: 2px;
+  }
+
+  /* Both sides of the code, names highlighted */
+  .code-pair {
+    display: grid;
+    gap: 0.875rem;
+    margin-top: 1rem;
+  }
+
+  .code-card {
+    min-width: 0;
+  }
+
+  .code-label {
+    display: block;
+    margin-bottom: 0.375rem;
+    font-family: var(--demo-font-ui);
+    font-size: 0.8125rem;
+    font-weight: 600;
+  }
+
+  .code-label-jsp {
+    color: #f0b25a;
+  }
+
+  .code-label-react {
+    color: #bca8fa;
+  }
+
+  .code-card pre {
+    margin: 0;
+    padding: 0.875rem 1rem;
+    font-size: 0.8125rem;
+  }
+
+  .code-card :global(.name) {
+    border-radius: 0.25rem;
+    padding: 0 0.125rem;
+    color: #fff;
+    font-weight: 700;
+  }
+
+  .code-card :global(.name-send) {
+    background: rgb(180 83 9 / 0.75);
+  }
+
+  .code-card :global(.name-listen) {
+    background: rgb(109 91 208 / 0.85);
+  }
+
+  .bridge-demo[data-match="false"] :global(.name-listen) {
+    background: rgb(185 28 28 / 0.85);
+  }
+
+  @media (max-width: 36rem) {
+    .stage {
+      padding: 1rem 1rem 6.5rem;
+    }
+
+    .listener {
+      right: 0.75rem;
+      bottom: 0.75rem;
+      max-width: calc(100% - 1.5rem);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .legacy-button.is-hint,
+    .ring.is-playing,
+    .event-label.is-playing,
+    .listener[data-state="idle"] .listener-state::before,
+    .listener[data-state="ignored"],
+    .modal-backdrop,
+    .modal {
+      animation: none;
+    }
+  }
+</style>

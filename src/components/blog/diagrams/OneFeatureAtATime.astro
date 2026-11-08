@@ -1,0 +1,833 @@
+---
+/**
+ * The migration as a time-lapse. An app window (JSP sidebar + current page)
+ * plays through a timeline from "Jan 2024" to "Today". Each step ships one
+ * React feature in one of the ways the article goes on to explain:
+ *   - a whole new page        (sidebar gains a violet "New" page)
+ *   - a section in a JSP page (one violet block in an amber page + a dot)
+ *   - an overlay on every page (the command palette)
+ * Old pages never change. It autoplays once when scrolled into view; readers
+ * can drag the timeline or replay it.
+ */
+import DemoWindow from "./DemoWindow.astro";
+
+type Step = {
+  when: string;
+  url: string;
+  page: string;
+  kind: "jsp" | "page" | "section" | "overlay";
+  feature?: string;
+  how?: string;
+  block?: number;
+};
+
+const steps: Step[] = [
+  { when: "Jan 2024", url: "/projects", page: "Projects", kind: "jsp" },
+  {
+    when: "Mar 2024",
+    url: "/dashboard",
+    page: "Dashboard",
+    kind: "page",
+    feature: "Dashboard",
+    how: "New page",
+  },
+  {
+    when: "May 2024",
+    url: "/reports",
+    page: "Reports",
+    kind: "section",
+    feature: "Usage chart",
+    how: "Inside a JSP page",
+    block: 1,
+  },
+  {
+    when: "Aug 2024",
+    url: "/projects",
+    page: "Projects",
+    kind: "section",
+    feature: "Comments",
+    how: "Inside a JSP page",
+    block: 3,
+  },
+  {
+    when: "Nov 2024",
+    url: "/board",
+    page: "Board",
+    kind: "page",
+    feature: "Kanban board",
+    how: "New page",
+  },
+  {
+    when: "Feb 2025",
+    url: "/settings",
+    page: "Settings",
+    kind: "overlay",
+    feature: "Command palette",
+    how: "On every page",
+  },
+  {
+    when: "Jun 2025",
+    url: "/files",
+    page: "Files",
+    kind: "section",
+    feature: "File uploader",
+    how: "Inside a JSP page",
+    block: 2,
+  },
+  {
+    when: "Today",
+    url: "/analytics",
+    page: "Analytics",
+    kind: "page",
+    feature: "Analytics",
+    how: "New page",
+  },
+];
+
+// Sidebar: the old JSP pages, plus new React pages that appear over time.
+const nav = [
+  { name: "Dashboard", newAt: 1 },
+  { name: "Projects", sectionAt: 3 },
+  { name: "Reports", sectionAt: 2 },
+  { name: "Board", newAt: 4 },
+  { name: "Files", sectionAt: 6 },
+  { name: "Analytics", newAt: 7 },
+  { name: "Settings" },
+  { name: "Users" },
+  { name: "Help center" },
+];
+
+const last = steps.length - 1;
+---
+
+<figure
+  class="blog-figure feature-demo"
+  data-feature-demo
+  data-steps={JSON.stringify(steps)}
+>
+  <DemoWindow url="/projects">
+    <div class="app" data-app data-kind="jsp">
+      <nav class="sidebar" aria-hidden="true">
+        <span class="app-logo"></span>
+        <span class="palette-chip" data-palette-chip>⌘K</span>
+        {
+          nav.map((item) => (
+            <span
+              class="nav-item"
+              data-nav={item.name}
+              data-new-at={item.newAt}
+              data-section-at={item.sectionAt}
+              data-react={String(item.newAt !== undefined)}
+              data-active={String(item.name === "Projects")}
+              hidden={item.newAt !== undefined}
+            >
+              <span class="nav-name">{item.name}</span>
+              {item.newAt !== undefined && <span class="nav-new">New</span>}
+              {item.sectionAt !== undefined && <span class="nav-dot" />}
+            </span>
+          ))
+        }
+      </nav>
+
+      <div class="main" aria-hidden="true">
+        <div class="page-head">
+          <span class="page-title" data-title>Projects</span>
+          <span class="page-tag" data-tag>JSP</span>
+        </div>
+        <div class="blocks">
+          {
+            [0, 1, 2, 3].map((index) => (
+              <div class="block" data-block={index}>
+                <span class="block-label" />
+                <i />
+                <i />
+              </div>
+            ))
+          }
+        </div>
+
+        <div class="palette" data-palette>
+          <span class="palette-input">Search or jump to…</span>
+          <span class="palette-row is-active">Go to Projects</span>
+          <span class="palette-row">Create a task</span>
+        </div>
+
+        <div class="toast" data-toast>
+          <span class="toast-kicker">Shipped in React</span>
+          <span class="toast-feature" data-toast-feature></span>
+          <span class="toast-how" data-toast-how></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="share" aria-hidden="true">
+      <span class="share-jsp"></span>
+      <span class="share-react" data-share></span>
+    </div>
+  </DemoWindow>
+
+  <div class="timeline">
+    <button type="button" class="demo-button play" data-play>Play</button>
+    <div class="track">
+      <input
+        type="range"
+        min="0"
+        max={last}
+        step="1"
+        value="0"
+        aria-label="Timeline"
+        data-range
+      />
+      <div class="ticks" aria-hidden="true">
+        {
+          steps.map((step, index) => (
+            <span class={index === 0 || index === last ? "is-end" : ""}>
+              {step.when}
+            </span>
+          ))
+        }
+      </div>
+    </div>
+  </div>
+
+  <p class="tally" aria-live="polite" data-status>
+    Every page is JSP. Press play.
+  </p>
+
+  <figcaption>
+    The rule: old pages stay as they are, and every new feature ships in React.
+    (Illustrative, not to scale.)
+  </figcaption>
+</figure>
+
+<script>
+  import { playSound } from "../../../lib/sound";
+
+  type Step = {
+    when: string;
+    url: string;
+    page: string;
+    kind: "jsp" | "page" | "section" | "overlay";
+    feature?: string;
+    how?: string;
+    block?: number;
+  };
+
+  const STEP_MS = 1500;
+  const OLD_PAGES = 6;
+
+  for (const demo of document.querySelectorAll<HTMLElement>(
+    "[data-feature-demo]",
+  )) {
+    const steps = JSON.parse(demo.dataset.steps ?? "[]") as Step[];
+    const app = demo.querySelector<HTMLElement>("[data-app]");
+    const url = demo.querySelector<HTMLElement>("[data-demo-url]");
+    const title = demo.querySelector<HTMLElement>("[data-title]");
+    const tag = demo.querySelector<HTMLElement>("[data-tag]");
+    const toast = demo.querySelector<HTMLElement>("[data-toast]");
+    const toastFeature = demo.querySelector<HTMLElement>(
+      "[data-toast-feature]",
+    );
+    const toastHow = demo.querySelector<HTMLElement>("[data-toast-how]");
+    const share = demo.querySelector<HTMLElement>("[data-share]");
+    const range = demo.querySelector<HTMLInputElement>("[data-range]");
+    const play = demo.querySelector<HTMLButtonElement>("[data-play]");
+    const status = demo.querySelector<HTMLElement>("[data-status]");
+    const chip = demo.querySelector<HTMLElement>("[data-palette-chip]");
+    const blocks = [...demo.querySelectorAll<HTMLElement>("[data-block]")];
+    const navItems = [...demo.querySelectorAll<HTMLElement>("[data-nav]")];
+    if (
+      !app ||
+      !title ||
+      !tag ||
+      !toast ||
+      !toastFeature ||
+      !toastHow ||
+      !share ||
+      !range ||
+      !play ||
+      !status ||
+      !chip
+    )
+      continue;
+
+    const last = steps.length - 1;
+    let timer = 0;
+    let current = -1;
+    // Once the reader drives the timeline, autoplay never takes over.
+    let touched = false;
+
+    const canSound = () =>
+      (navigator as Navigator & { userActivation?: { hasBeenActive: boolean } })
+        .userActivation?.hasBeenActive ?? false;
+
+    const render = (index: number, announce: boolean) => {
+      const step = steps[index];
+      const shipped = index; // one feature per step after "Early 2024"
+
+      app.dataset.kind = step.kind;
+      if (url) url.textContent = step.url;
+      title.textContent = step.page;
+
+      const isReactPage = step.kind === "page";
+      tag.textContent = isReactPage ? "React page" : "JSP page";
+
+      // Page blocks: a whole React page is all violet; a section lights one.
+      blocks.forEach((block, i) => {
+        const react =
+          isReactPage || (step.kind === "section" && step.block === i);
+        block.dataset.react = String(react);
+        const label = block.querySelector<HTMLElement>(".block-label");
+        if (label) {
+          label.textContent =
+            step.kind === "section" && step.block === i
+              ? `⚛ ${step.feature}`
+              : isReactPage && i === 0
+                ? `⚛ ${step.feature}`
+                : "";
+        }
+      });
+
+      // Sidebar: new pages appear, pages with React sections get a dot.
+      navItems.forEach((item) => {
+        const newAt = item.dataset.newAt ? Number(item.dataset.newAt) : null;
+        const sectionAt = item.dataset.sectionAt
+          ? Number(item.dataset.sectionAt)
+          : null;
+        item.hidden = newAt !== null && newAt > index;
+        item.dataset.react = String(newAt !== null);
+        item.dataset.section = String(sectionAt !== null && sectionAt <= index);
+        item.dataset.active = String(item.dataset.nav === step.page);
+      });
+      chip.dataset.on = String(index >= 5);
+
+      share.style.flexGrow = String(shipped);
+      range.value = String(index);
+      range.style.setProperty("--progress", `${(index / last) * 100}%`);
+
+      status.textContent =
+        index === 0
+          ? "Every page is JSP. Press play."
+          : `${shipped} React feature${shipped === 1 ? "" : "s"} shipped · 0 old pages rewritten`;
+
+      if (announce && step.feature) {
+        toastFeature.textContent = step.feature;
+        toastHow.textContent = step.how ?? "";
+        toast.classList.remove("is-on");
+        void toast.offsetWidth;
+        toast.classList.add("is-on");
+        if (canSound()) playSound(index === last ? "fix" : "pop");
+      }
+      current = index;
+    };
+
+    const stop = () => {
+      window.clearInterval(timer);
+      timer = 0;
+      play.textContent = current >= last ? "Replay" : "Play";
+      demo.dataset.playing = "false";
+    };
+
+    const start = () => {
+      if (timer) return;
+      if (current >= last) render(0, false);
+      demo.dataset.playing = "true";
+      play.textContent = "Pause";
+      timer = window.setInterval(() => {
+        if (current >= last) {
+          stop();
+          return;
+        }
+        render(current + 1, true);
+        if (current >= last) stop();
+      }, STEP_MS);
+    };
+
+    play.addEventListener("click", () => {
+      touched = true;
+      if (timer) stop();
+      else start();
+    });
+    range.addEventListener("input", () => {
+      touched = true;
+      stop();
+      const index = Number(range.value);
+      render(index, index !== current);
+      play.textContent = index >= last ? "Replay" : "Play";
+    });
+
+    const reduced = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
+
+    if (reduced) {
+      render(last, false);
+      stop();
+    } else {
+      render(0, false);
+      // Autoplay once, the first time the demo scrolls into view.
+      const observer = new IntersectionObserver(
+        (entries) => {
+          if (!entries.some((entry) => entry.isIntersecting)) return;
+          observer.disconnect();
+          window.setTimeout(() => {
+            if (!touched) start();
+          }, 500);
+        },
+        { threshold: 0.55 },
+      );
+      observer.observe(demo);
+    }
+  }
+</script>
+
+<style>
+  .app {
+    position: relative;
+    display: grid;
+    grid-template-columns: 10rem minmax(0, 1fr);
+    min-height: 17.5rem;
+  }
+
+  /* Sidebar (always JSP chrome, with React pages appearing in it) */
+  .sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 0.125rem;
+    background: var(--demo-jsp-soft);
+    padding: 0.875rem 0.625rem;
+  }
+
+  .app-logo {
+    width: 1.5rem;
+    height: 1.5rem;
+    margin: 0 0 0.75rem 0.375rem;
+    border-radius: 0.375rem;
+    background: var(--demo-jsp);
+  }
+
+  .palette-chip {
+    position: absolute;
+    top: 1rem;
+    left: 7.25rem;
+    border-radius: 0.25rem;
+    background: var(--demo-react);
+    color: #fff;
+    padding: 0 0.3125rem;
+    font-size: 0.625rem;
+    font-weight: 600;
+    opacity: 0;
+    transform: scale(0.6);
+    transition:
+      opacity 250ms ease,
+      transform 300ms var(--demo-ease-pop);
+  }
+
+  .palette-chip[data-on="true"] {
+    opacity: 1;
+    transform: none;
+  }
+
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    border-radius: 0.25rem;
+    color: #7a3e00;
+    padding: 0.3125rem 0.5rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    transition: background-color 200ms ease;
+  }
+
+  .nav-item[hidden] {
+    display: none;
+  }
+
+  .nav-item[data-react="true"] {
+    color: var(--demo-react);
+    font-weight: 600;
+    animation: nav-in 380ms var(--demo-ease-pop);
+  }
+
+  .nav-item[data-active="true"] {
+    background: rgb(255 255 255 / 0.75);
+  }
+
+  .nav-name {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .nav-new {
+    flex-shrink: 0;
+    margin-left: auto;
+    white-space: nowrap;
+    border-radius: 0.25rem;
+    background: var(--demo-react-soft);
+    color: var(--demo-react);
+    padding: 0 0.25rem;
+    font-size: 0.5625rem;
+    font-weight: 700;
+  }
+
+  .nav-dot {
+    width: 0.375rem;
+    height: 0.375rem;
+    flex-shrink: 0;
+    margin-left: auto;
+    border-radius: 50%;
+    background: var(--demo-react);
+    opacity: 0;
+    transform: scale(0);
+    transition:
+      opacity 200ms ease,
+      transform 300ms var(--demo-ease-pop);
+  }
+
+  .nav-item[data-section="true"] .nav-dot {
+    opacity: 1;
+    transform: none;
+  }
+
+  /* Main page */
+  .main {
+    position: relative;
+    overflow: hidden;
+    padding: 1rem 1.125rem 1.125rem;
+  }
+
+  .page-head {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .page-title {
+    font-size: 1rem;
+    font-weight: 700;
+  }
+
+  .page-tag {
+    border-radius: 0.25rem;
+    background: var(--demo-jsp-soft);
+    color: var(--demo-jsp);
+    padding: 0 0.375rem;
+    font-size: 0.6875rem;
+    font-weight: 600;
+  }
+
+  .app[data-kind="page"] .page-tag {
+    background: var(--demo-react-soft);
+    color: var(--demo-react);
+  }
+
+  .blocks {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.5rem;
+  }
+
+  .block {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    gap: 0.3125rem;
+    min-height: 4.5rem;
+    border-radius: 0.25rem;
+    background: var(--demo-jsp-soft);
+    padding: 0.625rem 0.75rem;
+    transition: background-color 300ms ease;
+  }
+
+  .block:first-child,
+  .block:last-child {
+    grid-column: 1 / -1;
+  }
+
+  .block:first-child {
+    min-height: 3.25rem;
+  }
+
+  .block i {
+    height: 0.375rem;
+    border-radius: 0.125rem;
+    background: #f2dfc0;
+    transition: background-color 300ms ease;
+  }
+
+  .block i:last-child {
+    width: 55%;
+  }
+
+  .block-label {
+    margin-bottom: auto;
+    color: var(--demo-react);
+    font-size: 0.75rem;
+    font-weight: 700;
+  }
+
+  .block[data-react="true"] {
+    background: var(--demo-react-soft);
+    animation: block-in 450ms var(--demo-ease-pop);
+  }
+
+  .block[data-react="true"] i {
+    background: #ddd3fd;
+  }
+
+  /* Command palette overlay */
+  .palette {
+    position: absolute;
+    top: 3.25rem;
+    left: 50%;
+    display: grid;
+    gap: 0.25rem;
+    width: min(80%, 17rem);
+    border-radius: 0.375rem;
+    background: #fff;
+    box-shadow: 0 0.75rem 2rem rgb(28 25 23 / 0.2);
+    padding: 0.5rem;
+    opacity: 0;
+    pointer-events: none;
+    transform: translate(-50%, -0.5rem) scale(0.96);
+    transition:
+      opacity 200ms ease,
+      transform 300ms var(--demo-ease-pop);
+  }
+
+  .app[data-kind="overlay"] .palette {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+
+  .palette-input {
+    border-radius: 0.25rem;
+    background: var(--demo-react-soft);
+    color: var(--demo-react);
+    padding: 0.375rem 0.5rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+  }
+
+  .palette-row {
+    border-radius: 0.25rem;
+    color: var(--demo-muted);
+    padding: 0.25rem 0.5rem;
+    font-size: 0.6875rem;
+  }
+
+  .palette-row.is-active {
+    background: var(--demo-surface);
+    color: var(--demo-text);
+  }
+
+  /* "Shipped" toast */
+  .toast {
+    position: absolute;
+    right: 1rem;
+    bottom: 1rem;
+    display: grid;
+    border-radius: 0.375rem;
+    background: var(--demo-text);
+    color: #fff;
+    padding: 0.5rem 0.75rem;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .toast.is-on {
+    animation: toast 1400ms ease forwards;
+  }
+
+  .toast-kicker {
+    color: #bca8fa;
+    font-size: 0.625rem;
+    font-weight: 600;
+  }
+
+  .toast-feature {
+    font-size: 0.8125rem;
+    font-weight: 700;
+  }
+
+  .toast-how {
+    color: #a8a29e;
+    font-size: 0.625rem;
+  }
+
+  /* React share of the app */
+  .share {
+    display: flex;
+    gap: 2px;
+    height: 0.375rem;
+  }
+
+  .share-jsp {
+    flex: 6 1 0;
+    background: #f2dfc0;
+  }
+
+  .share-react {
+    flex: 0 1 0;
+    background: var(--demo-react);
+    transition: flex-grow 500ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  /* Timeline (dark, outside the window) */
+  .timeline {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    margin-top: 1rem;
+  }
+
+  .play {
+    min-width: 5.5rem;
+  }
+
+  .track {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .track input {
+    --progress: 0%;
+
+    width: 100%;
+    height: 0.375rem;
+    margin: 0.875rem 0 0.5rem;
+    border-radius: 0.25rem;
+    background: linear-gradient(
+      to right,
+      var(--blog-accent) var(--progress),
+      rgb(255 255 255 / 0.12) var(--progress)
+    );
+    cursor: pointer;
+    appearance: none;
+  }
+
+  .track input::-webkit-slider-thumb {
+    width: 1rem;
+    height: 1rem;
+    border: 0;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 0 0 3px var(--blog-accent);
+    appearance: none;
+  }
+
+  .track input::-moz-range-thumb {
+    width: 1rem;
+    height: 1rem;
+    border: 0;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 0 0 3px var(--blog-accent);
+  }
+
+  .track input:focus-visible {
+    outline: 2px solid var(--blog-accent);
+    outline-offset: 4px;
+  }
+
+  .ticks {
+    display: flex;
+    justify-content: space-between;
+    color: var(--blog-text-muted);
+    font-size: 0.6875rem;
+  }
+
+  .ticks span {
+    width: 0;
+    white-space: nowrap;
+    text-align: center;
+    display: flex;
+    justify-content: center;
+  }
+
+  .ticks span:first-child {
+    justify-content: flex-start;
+  }
+
+  .ticks span:last-child {
+    justify-content: flex-end;
+  }
+
+  .tally {
+    margin: 0.75rem 0 0;
+    color: var(--blog-text);
+    font-size: 0.9375rem;
+    font-weight: 600;
+  }
+
+  @keyframes nav-in {
+    from {
+      opacity: 0;
+      transform: translateX(-0.5rem);
+    }
+  }
+
+  @keyframes block-in {
+    from {
+      transform: scale(0.96);
+    }
+  }
+
+  @keyframes toast {
+    0% {
+      opacity: 0;
+      transform: translateY(0.5rem);
+    }
+    12%,
+    80% {
+      opacity: 1;
+      transform: none;
+    }
+    100% {
+      opacity: 0;
+    }
+  }
+
+  @media (max-width: 36rem) {
+    .app {
+      grid-template-columns: 7rem minmax(0, 1fr);
+    }
+
+    .palette-chip {
+      left: 4.5rem;
+    }
+
+    .nav-new {
+      display: none;
+    }
+
+    .ticks span:not(.is-end) {
+      visibility: hidden;
+    }
+
+    .main {
+      padding: 0.875rem;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .palette-chip,
+    .nav-dot,
+    .block,
+    .block i,
+    .palette,
+    .share-react {
+      transition: none;
+    }
+
+    .nav-item[data-react="true"],
+    .block[data-react="true"],
+    .toast.is-on {
+      animation: none;
+    }
+  }
+</style>

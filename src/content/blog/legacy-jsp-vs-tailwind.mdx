@@ -39,8 +39,8 @@ Since we were mounting React directly inside the JSP page, both were sharing the
 And that's exactly what happened. For example, our legacy stylesheet had rules like this:
 
 ```css
-/* styles.css (legacy) */
-.button, button, input[type="submit"], .button.drop {
+/* legacy-base.css */
+button, input[type="submit"] {
   text-transform: uppercase;
 }
 ```
@@ -142,8 +142,8 @@ These aren't Tailwind utility classes. They're targeting HTML elements directly.
 Now, our legacy CSS also had rules targeting the same HTML elements. For example:
 
 ```css
-/* creation.css (legacy) */
-input, .numberselector /* , ... */ {
+/* legacy-forms.css */
+input {
   padding: 8px 0;
   font-size: 18px;
   font-weight: 500;
