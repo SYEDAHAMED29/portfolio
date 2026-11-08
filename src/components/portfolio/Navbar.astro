@@ -8,8 +8,14 @@ interface Props {
 }
 
 const { homeHref = "#hero" } = Astro.props;
+// Section anchors (#about) need the home path when used off the home page;
+// page links (/blog) are already absolute and must be left alone.
 const sectionHref = (href: string) =>
-  homeHref === "#hero" ? href : `/${href}`;
+  href.startsWith("#") && homeHref !== "#hero" ? `/${href}` : href;
+// Highlight a page link while the reader is on that page (or below it).
+const isCurrent = (href: string) =>
+  href.startsWith("/") &&
+  (Astro.url.pathname === href || Astro.url.pathname.startsWith(`${href}/`));
 ---
 
 <nav
@@ -30,7 +36,13 @@ const sectionHref = (href: string) =>
         siteData.nav.map((item) => (
           <a
             href={sectionHref(item.href)}
-            class="text-base text-muted-foreground transition-colors hover:text-foreground"
+            class:list={[
+              "text-base transition-colors hover:text-foreground",
+              isCurrent(item.href)
+                ? "text-foreground"
+                : "text-muted-foreground",
+            ]}
+            aria-current={isCurrent(item.href) ? "page" : undefined}
           >
             {item.label}
           </a>
@@ -95,7 +107,13 @@ const sectionHref = (href: string) =>
         siteData.nav.map((item) => (
           <a
             href={sectionHref(item.href)}
-            class="text-base text-muted-foreground transition-colors hover:text-foreground"
+            class:list={[
+              "text-base transition-colors hover:text-foreground",
+              isCurrent(item.href)
+                ? "text-foreground"
+                : "text-muted-foreground",
+            ]}
+            aria-current={isCurrent(item.href) ? "page" : undefined}
             data-mobile-link
           >
             {item.label}

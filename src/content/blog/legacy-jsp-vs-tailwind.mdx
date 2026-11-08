@@ -1,0 +1,357 @@
+---
+title: "React Inside a Legacy JSP Page: How We Fixed the CSS Mess"
+description: "Mounting a React, Tailwind, and shadcn/ui feature inside a server-rendered JSP editor, and the prefix, !important, and scoped Preflight setup that stopped two stylesheets from breaking each other."
+publishedDate: 2026-11-09
+category: Engineering
+tags:
+  - React
+  - Tailwind CSS
+  - CSS
+  - Legacy Code
+featured: true
+draft: false
+---
+
+import ArticleFigure from "../../components/blog/blocks/ArticleFigure.astro";
+import Emoji from "../../components/blog/blocks/Emoji.astro";
+import Callout from "../../components/blog/blocks/Callout.astro";
+import GitHubSourceLink from "../../components/blog/blocks/GitHubSourceLink.astro";
+import Lessons from "../../components/blog/blocks/Lessons.astro";
+import Lesson from "../../components/blog/blocks/Lesson.astro";
+import PageBreakDemo from "../../components/blog/diagrams/PageBreakDemo.astro";
+
+Back in December 2024, I was working on an AI content generator for Beamer's post editor. The idea was pretty simple. You write a short brief, select a tone, and the AI generates a post for you.
+
+But there was one problem.
+
+Our existing post editor was built using JSP, rendered on the server, with years of hand-written legacy CSS behind it. And obviously, we weren't going to rewrite the entire editor just to introduce one new feature. So I built the AI content generator using React, Tailwind CSS, and shadcn/ui, and mounted it directly inside the existing JSP page.
+
+Sounds straightforward, right?
+
+Well, the JavaScript worked on the first try. Getting the CSS to behave was a completely different story. <Emoji name="fire" label="fire" />
+
+## The Problem: Two Stylesheets Fighting Each Other
+
+Since we were mounting React directly inside the JSP page, both were sharing the same document. We weren't using an iframe or Shadow DOM to isolate anything. Which meant the CSS from our React components could affect the existing JSP page, and the legacy CSS could affect our React components.
+
+<PageBreakDemo />
+
+And that's exactly what happened. For example, our legacy stylesheet had rules like this:
+
+```css
+/* styles.css (legacy) */
+.button, button, input[type="submit"], .button.drop {
+  text-transform: uppercase;
+}
+```
+
+Now, this rule was written long before we introduced React. But CSS doesn't care about that.
+
+If there's a `<button>` anywhere on the page, including inside our React components, this rule can affect it.
+
+We were using Tailwind with this configuration:
+
+```js
+important: true, // every Tailwind utility becomes !important
+```
+
+This adds `!important` to every Tailwind utility, allowing those styles to take priority over competing legacy CSS declarations. And for a while, that was the only thing keeping our React components from breaking.
+
+Whenever I tried removing `important: true`, the legacy styles would start affecting the React components again. So we were in this situation where fixing the CSS on one side would break something on the other.
+
+Not ideal. <Emoji name="grimace" label="grimacing face" />
+
+## First Attempt: Prefixing Tailwind Classes
+
+The first issue was pretty obvious. Tailwind generates global utility classes. For example, when you use `hidden`, Tailwind generates something like:
+
+```css
+.hidden {
+  display: none;
+}
+```
+
+But our legacy JSP pages were already using `class="hidden"` for their own elements. So now we had two different stylesheets using the same class names.
+
+The fix for this was simple enough. Tailwind supports adding a prefix to all its utility classes. So I added this to our Tailwind config:
+
+```js
+// tailwind.config.js
+prefix: "tw-",
+```
+
+Now, instead of writing:
+
+```tsx
+<div className="hidden md:flex p-4 border">
+```
+
+We'd write:
+
+```tsx
+<div className="tw-hidden md:tw-flex tw-p-4 tw-border">
+```
+
+This way, our Tailwind classes would always start with `tw-`, while the existing JSP classes would remain unchanged. And since none of our legacy classes used that prefix, we no longer had to worry about those class-name collisions.
+
+<Callout type="warning" title="Using shadcn/ui?">
+
+You also need to configure the same prefix in shadcn's `components.json` and in `tailwind-merge`:
+
+```js
+extendTailwindMerge({ prefix: "tw-" })
+```
+
+Otherwise, the `cn()` utility won't merge your Tailwind classes correctly.
+
+</Callout>
+
+So, that fixed the class-name collisions.
+
+But our inputs were still broken.
+
+## The Actual Problem: Tailwind Preflight
+
+This took me a little longer to figure out. Tailwind includes something called **Preflight**, which is essentially a set of base CSS styles that reset the browser's default styling. You can read more about it in the [Tailwind Preflight documentation](https://v3.tailwindcss.com/docs/preflight).
+
+For example, Preflight includes rules like these:
+
+```css
+/* Tailwind Preflight (excerpt) */
+button, input, select, textarea {
+  font-size: 100%;
+  font-weight: inherit;
+  padding: 0;
+}
+
+a {
+  color: inherit;
+}
+
+ol, ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+```
+
+Notice something? <Emoji name="eyes" label="eyes" />
+
+These aren't Tailwind utility classes. They're targeting HTML elements directly. Which means adding `tw-` to our utility classes doesn't help here.
+
+Now, our legacy CSS also had rules targeting the same HTML elements. For example:
+
+```css
+/* creation.css (legacy) */
+input, .numberselector /* , ... */ {
+  padding: 8px 0;
+  font-size: 18px;
+  font-weight: 500;
+}
+```
+
+So we had Tailwind Preflight setting the input padding to `0`, while our legacy CSS was setting it to `8px 0`. Both `input` selectors have the same CSS specificity.
+
+<Callout type="info" title="How the tie is broken">
+
+When two rules have the same specificity, assuming the same cascade origin and importance, the one that loads later wins.
+
+</Callout>
+
+In our case, the React stylesheet was loading after the legacy stylesheet. So Tailwind Preflight was overriding the existing styles for inputs, links, lists, and other HTML elements across the editor page. That's why things were breaking even after we added the prefix.
+
+Here's what the editor looked like with the original styles compared with global Preflight:
+
+<ArticleFigure
+  src="/blog/legacy-jsp-vs-tailwind/editor-page-before-after.png"
+  alt="Side-by-side screenshots of the legacy post editor. Left, labelled Today: Preflight scoped to .react-root, shows a blue link, indented lists, and 18px Action link inputs. Right, labelled Before: global Preflight, shows the link turned grey, the list indent and spacing gone, and the Action link inputs shrunk."
+  width={2600}
+  height={1165}
+  caption="Left: today. Right: global Preflight. The legacy editor breaks: the link goes grey, the lists lose their indent, and the Action link inputs shrink. The blue button is the React AI content generator."
+/>
+
+And here's a closer look at the inputs:
+
+<ArticleFigure
+  src="/blog/legacy-jsp-vs-tailwind/legacy-inputs-before-after.png"
+  alt="Side-by-side screenshots of the legacy Action link and Segmentation inputs. Left, with scoped Preflight, the inputs are 18px with 8px padding and 39px tall. Right, with global Preflight, they are 16px with no padding and 23px tall."
+  width={2600}
+  height={1084}
+  caption="Left: today. Right: global Preflight. Same inputs, 18px down to 16px, padding gone, 39px tall down to 23px."
+/>
+
+## Why Our React Wrapper Didn't Help
+
+We already had a wrapper around every React mount point. Something like this:
+
+```html
+<div id="ai-content-generator" class="react-root"></div>
+```
+
+Initially, I thought having all the React components inside `.react-root` would be enough to isolate the styling. But that's not how CSS works.
+
+Just because your React components are rendered inside a particular div doesn't mean the styles imported by React are restricted to that div. Tailwind Preflight still generates global selectors like:
+
+```css
+input { padding: 0; }
+a { color: inherit; }
+ul { list-style: none; }
+```
+
+And those selectors can affect matching elements anywhere in the document. So the wrapper alone wasn't doing anything to prevent the CSS from leaking into the JSP page.
+
+At this point, I tried another approach. What if we simply disabled Tailwind Preflight? Tailwind lets you do that:
+
+```js
+// tailwind.config.js
+corePlugins: {
+  preflight: false,
+},
+```
+
+And it worked! <Emoji name="party" label="party popper" />
+
+Well, sort of.
+
+The legacy JSP page went back to normal because Tailwind was no longer resetting its HTML elements. But now our React components started breaking.
+
+The problem was that shadcn/ui expects the base styles provided by Tailwind Preflight. Without those styles, the components weren't behaving as expected. For example, our legacy uppercase rule was now affecting the select buttons inside React. And some of our textareas were overflowing their containers because they no longer had the expected `box-sizing: border-box` reset.
+
+Here's what that looked like:
+
+<ArticleFigure
+  src="/blog/legacy-jsp-vs-tailwind/ai-panel-before-after.png"
+  alt="Side-by-side screenshots of the React AI content generator panel. Left, labelled Today, the Brief and Custom Input textareas fit inside the panel and the Tone and Length selects read Professional and Short. Right, labelled Preflight turned off, both textareas overflow the panel's right edge and the selects read PROFESSIONAL and SHORT in uppercase."
+  width={2308}
+  height={1504}
+  caption="Left: today. Right: Preflight off. The selects pick up the legacy uppercase rule, and both textareas run past the panel’s right edge."
+/>
+
+So we had two options, and both were bad.
+
+- Enable Preflight, and the legacy JSP page breaks.
+- Disable Preflight, and our React components break.
+
+What we actually needed was a way to keep Preflight enabled, but make sure it only applied inside `.react-root`.
+
+## The Fix: Scoped Tailwind Preflight
+
+After looking into ways to isolate Tailwind's reset styles, I came across this package:
+
+[tailwindcss-scoped-preflight](https://github.com/Roman86/tailwindcss-scoped-preflight)
+
+And this was exactly what we needed. The package lets you scope Tailwind Preflight to a specific container instead of applying it globally. So I added it to our Tailwind configuration:
+
+<GitHubSourceLink
+  href="https://github.com/Roman86/tailwindcss-scoped-preflight"
+  path="Roman86/tailwindcss-scoped-preflight"
+/>
+
+```js
+// tailwind.config.js
+import {
+  scopedPreflightStyles,
+  isolateInsideOfContainer,
+} from "tailwindcss-scoped-preflight";
+
+plugins: [
+  scopedPreflightStyles({
+    isolationStrategy: isolateInsideOfContainer(".react-root"),
+  }),
+],
+```
+
+Now, instead of generating Preflight rules that affect every element on the page, it generates rules scoped to `.react-root`. For example, before scoping, the generated CSS looked something like this:
+
+```css
+/* before: every element on the page */
+*, ::before, ::after {
+  box-sizing: border-box;
+  border-width: 0;
+}
+```
+
+After scoping, it looked like this:
+
+```css
+/* after: only inside .react-root */
+*:where(.react-root, .react-root *) {
+  box-sizing: border-box;
+  border-width: 0;
+}
+```
+
+See the difference?
+
+Instead of applying the reset globally, it now targets elements inside `.react-root`. Which means our legacy JSP elements can continue using their existing styles, while our React components get the Tailwind reset they need.
+
+So the legacy inputs keep their original `18px` font size and padding, and our shadcn components inside React get the base styles they expect. And finally, both sides of the page were working correctly. <Emoji name="sparkles" label="sparkles" />
+
+### One Interesting Detail About `:where()`
+
+You might have noticed that the generated CSS uses `:where()`. This is actually pretty useful.
+
+In CSS, [`:where()`](https://developer.mozilla.org/en-US/docs/Web/CSS/:where) has zero specificity. So even though we're scoping the reset to `.react-root`, we're not unnecessarily increasing the specificity of those base styles. This is important because Preflight is supposed to provide a foundation, not override every other style.
+
+And since we still have `important: true` enabled, our Tailwind utility classes can continue taking priority over the legacy selectors inside React.
+
+## The Final Configuration
+
+After all this, our Tailwind configuration came down to three important things:
+
+```js
+// tailwind.config.js
+prefix: "tw-",     // Tailwind classes can't clash with legacy classes
+important: true,   // Tailwind utilities win over legacy selectors
+plugins: [
+  scopedPreflightStyles({ // the reset only applies inside React
+    isolationStrategy: isolateInsideOfContainer(".react-root"),
+  }),
+],
+```
+
+Here's what each one solves:
+
+**1. `prefix: "tw-"`**
+
+Prevents Tailwind utility class names from colliding with the existing legacy CSS classes.
+
+**2. `important: true`**
+
+Makes Tailwind utilities use `!important`, helping them take priority over legacy CSS rules that might otherwise override our React components.
+
+**3. `scopedPreflightStyles()`**
+
+Keeps Tailwind Preflight enabled, but restricts its reset styles to elements inside `.react-root`, instead of applying them to the entire JSP page.
+
+Together, these three changes solved the CSS conflicts we were running into.
+
+## A Few Things I Learned
+
+Looking back, there are a few things I wish I'd known before starting.
+
+<Lessons>
+<Lesson title="Add a Tailwind prefix from the beginning.">
+
+If you're introducing React and Tailwind into an existing application with a lot of legacy CSS, don't wait until class-name collisions start happening. Add the prefix before building your components. Otherwise, you'll eventually have to go back and update all those class names.
+
+</Lesson>
+<Lesson title="Don’t blindly disable Preflight when using shadcn/ui.">
+
+It might fix your legacy page, but it can introduce a completely different set of problems inside React. If you need Preflight, scope it rather than disabling it entirely.
+
+</Lesson>
+<Lesson title="Prefixing Tailwind classes doesn’t mean your CSS is isolated." highlight>
+
+Even with a prefix, global element selectors like `input`, `button`, and `a` can still affect parts of your application that you never intended to touch. You need to think about both utility classes and base styles.
+
+</Lesson>
+</Lessons>
+
+## Wrapping Up
+
+What started as a pretty simple task, embedding a React-based AI content generator into our existing JSP editor, turned into a much bigger CSS debugging problem than I expected.
+
+But in the end, we didn't need to rewrite the editor, introduce an iframe, or change how the legacy application worked. We just needed to make sure Tailwind's styles stayed where they belonged.
+
+If you're ever introducing React and Tailwind into an older application, especially one with years of existing CSS, hopefully this saves you some debugging time. <Emoji name="bug" label="bug" />

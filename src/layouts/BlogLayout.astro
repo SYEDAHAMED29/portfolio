@@ -1,19 +1,25 @@
 ---
+import type { MarkdownHeading } from "astro";
 import type { CollectionEntry } from "astro:content";
 import Navbar from "../components/portfolio/Navbar.astro";
 import Footer from "../components/portfolio/Footer.astro";
 import BlogMeta from "../components/blog/BlogMeta.astro";
+import SoundToggle from "../components/blog/SoundToggle.astro";
+import TableOfContents from "../components/blog/TableOfContents.astro";
 import BaseLayout from "./BaseLayout.astro";
 
 interface Props {
   post: CollectionEntry<"blog">;
+  headings?: MarkdownHeading[];
   readingTime?: string;
   previous?: CollectionEntry<"blog">;
   next?: CollectionEntry<"blog">;
 }
 
-const { post, readingTime, previous, next } = Astro.props;
+const { post, headings = [], readingTime, previous, next } = Astro.props;
 const isDraft = post.data.draft && import.meta.env.DEV;
+const tocHeadings = headings.filter(({ depth }) => depth === 2 || depth === 3);
+const hasToc = tocHeadings.length >= 3;
 ---
 
 <BaseLayout
@@ -27,61 +33,127 @@ const isDraft = post.data.draft && import.meta.env.DEV;
 >
   <Navbar homeHref="/" />
   <main class="blog-article-page">
-    <article class="blog-article">
-      <header class="blog-article-header">
-        <div class="blog-article-kicker">
-          <a href="/blog">Blog</a>
-          <span aria-hidden="true">/</span>
-          <span>{post.data.category}</span>
-          {isDraft && <span class="blog-draft">Draft</span>}
-        </div>
-        <h1>{post.data.title}</h1>
-        <p class="blog-article-description">{post.data.description}</p>
-        <BlogMeta
-          publishedDate={post.data.publishedDate}
-          updatedDate={post.data.updatedDate}
-          readingTime={readingTime}
-        />
-        <ul class="blog-tags" aria-label="Tags">
-          {post.data.tags.map((tag) => <li>{tag}</li>)}
-        </ul>
-      </header>
-
-      {
-        post.data.image && (
-          <figure class="blog-article-image">
-            <img src={post.data.image} alt={post.data.title} loading="eager" />
-          </figure>
-        )
-      }
-
-      <div class="blog-prose">
-        <slot />
+    <article class:list={["blog-article", { "blog-article-with-toc": hasToc }]}>
+      <div class="blog-hero">
+        <header class="blog-article-header blog-article-shell">
+          <div class="blog-article-kicker">
+            <a href="/blog">Blog</a>
+            <span aria-hidden="true">/</span>
+            <span>{post.data.category}</span>
+            {isDraft && <span class="blog-draft">Draft</span>}
+          </div>
+          <h1>{post.data.title}</h1>
+          <p class="blog-article-description">{post.data.description}</p>
+          <BlogMeta
+            publishedDate={post.data.publishedDate}
+            updatedDate={post.data.updatedDate}
+            readingTime={readingTime}
+          />
+          <div class="blog-article-tagline">
+            <ul class="blog-tags" aria-label="Tags">
+              {post.data.tags.map((tag) => <li>{tag}</li>)}
+            </ul>
+            <SoundToggle />
+          </div>
+        </header>
+        <svg
+          class="blog-hero-hills"
+          viewBox="0 0 1440 240"
+          preserveAspectRatio="none"
+          aria-hidden="true"
+          focusable="false"
+        >
+          <path
+            class="blog-hero-hill-back"
+            d="M0 150C90 70 250 40 380 90C470 125 540 110 620 80C760 25 930 20 1060 85C1130 120 1200 60 1290 45C1360 35 1410 50 1440 60V240H0Z"
+          ></path>
+          <path
+            class="blog-hero-hill-middle"
+            d="M0 190C110 140 260 130 380 170C450 192 520 170 600 145C720 108 860 115 960 160C1020 186 1100 165 1180 140C1280 110 1380 130 1440 150V240H0Z"
+          ></path>
+          <path
+            class="blog-hero-hill-front"
+            d="M0 225C160 200 320 190 480 215C600 232 700 205 820 198C960 190 1100 220 1240 212C1330 207 1400 198 1440 200V240H0Z"
+          ></path>
+        </svg>
       </div>
 
-      <nav class="blog-article-nav" aria-label="Article navigation">
+      <div class="blog-article-shell">
         {
-          previous ? (
-            <a href={`/blog/${previous.id}`}>
-              <span>Older article</span>
-              <strong>{previous.data.title}</strong>
-            </a>
-          ) : (
-            <span />
+          post.data.image && (
+            <figure class="blog-article-image">
+              <img
+                src={post.data.image}
+                alt={post.data.title}
+                loading="eager"
+              />
+            </figure>
           )
         }
-        {
-          next ? (
-            <a class="blog-article-nav-next" href={`/blog/${next.id}`}>
-              <span>Newer article</span>
-              <strong>{next.data.title}</strong>
-            </a>
-          ) : (
-            <span />
-          )
-        }
-      </nav>
+
+        <div class="blog-article-body">
+          <div class="blog-prose">
+            <slot />
+          </div>
+          {hasToc && <TableOfContents headings={tocHeadings} />}
+        </div>
+
+        <nav class="blog-article-nav" aria-label="Article navigation">
+          {
+            previous ? (
+              <a href={`/blog/${previous.id}`}>
+                <span>Older article</span>
+                <strong>{previous.data.title}</strong>
+              </a>
+            ) : (
+              <span />
+            )
+          }
+          {
+            next ? (
+              <a class="blog-article-nav-next" href={`/blog/${next.id}`}>
+                <span>Newer article</span>
+                <strong>{next.data.title}</strong>
+              </a>
+            ) : (
+              <span />
+            )
+          }
+        </nav>
+      </div>
     </article>
   </main>
   <Footer />
 </BaseLayout>
+
+<script>
+  import { playSound } from "../lib/sound";
+
+  // Section links: keep the normal jump-to-section behaviour, and also copy
+  // the full URL so it can be pasted straight into a message.
+  const COPIED_MS = 1500;
+
+  for (const anchor of document.querySelectorAll<HTMLAnchorElement>(
+    "[data-heading-anchor]",
+  )) {
+    let timer = 0;
+
+    anchor.addEventListener("click", () => {
+      const url = new URL(anchor.getAttribute("href") ?? "", location.href);
+      navigator.clipboard
+        ?.writeText(url.href)
+        .then(() => {
+          anchor.dataset.copied = "";
+          playSound("tick");
+          window.clearTimeout(timer);
+          timer = window.setTimeout(() => {
+            delete anchor.dataset.copied;
+          }, COPIED_MS);
+        })
+        .catch(() => {
+          // Clipboard blocked (permissions, insecure context): the hash
+          // navigation still gives the reader a shareable URL.
+        });
+    });
+  }
+</script>

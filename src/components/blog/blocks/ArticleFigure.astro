@@ -1,0 +1,52 @@
+---
+interface Props {
+  src: string;
+  alt: string;
+  width: number;
+  height: number;
+  caption?: string;
+  loading?: "lazy" | "eager";
+}
+
+const { src, alt, width, height, caption, loading = "lazy" } = Astro.props;
+---
+
+<figure class="blog-figure">
+  <a
+    class="blog-figure-link"
+    href={src}
+    target="_blank"
+    rel="noopener"
+    title="Open full-size image in a new tab"
+  >
+    <img
+      src={src}
+      alt={alt}
+      width={width}
+      height={height}
+      loading={loading}
+      decoding="async"
+    />
+  </a>
+  {caption && <figcaption>{caption}</figcaption>}
+</figure>
+
+<style>
+  .blog-figure {
+    margin: 2.5rem 0;
+  }
+
+  .blog-figure-link {
+    display: block;
+    border-radius: 0.75rem;
+  }
+
+  .blog-figure-link:focus-visible {
+    outline: 2px solid var(--blog-accent);
+    outline-offset: 3px;
+  }
+
+  .blog-figure-link:hover :global(img) {
+    border-color: var(--blog-accent);
+  }
+</style>

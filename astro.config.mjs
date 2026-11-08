@@ -1,6 +1,8 @@
 import { defineConfig } from "astro/config";
 import mdx from "@astrojs/mdx";
+import { rehypeHeadingIds } from "@astrojs/markdown-remark";
 import tailwindcss from "@tailwindcss/vite";
+import rehypeHeadingAnchors from "./src/lib/rehype-heading-anchors.mjs";
 
 export default defineConfig({
   site: "https://www.syedahamed.in",
@@ -8,6 +10,8 @@ export default defineConfig({
     shikiConfig: {
       theme: "one-dark-pro",
     },
+    // Heading ids must exist before the anchor plugin links to them.
+    rehypePlugins: [rehypeHeadingIds, rehypeHeadingAnchors],
   },
   integrations: [mdx()],
   vite: {

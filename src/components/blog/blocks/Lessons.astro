@@ -1,0 +1,25 @@
+---
+/**
+ * Numbered "lessons learned" cards. Wrap <Lesson> items:
+ *
+ * <Lessons>
+ *   <Lesson title="Add a prefix early.">Body text…</Lesson>
+ *   <Lesson title="The big one." highlight>Body text…</Lesson>
+ * </Lessons>
+ */
+---
+
+<ol class="lessons">
+  <slot />
+</ol>
+
+<style>
+  .lessons {
+    display: grid;
+    gap: 1rem;
+    margin: 1.75rem 0 2rem;
+    padding: 0;
+    counter-reset: lesson;
+    list-style: none;
+  }
+</style>

@@ -1,0 +1,112 @@
+---
+/** Article-level switch for the blog's interaction sounds. */
+---
+
+<button
+  type="button"
+  class="sound-toggle"
+  data-sound-toggle
+  aria-pressed="true"
+>
+  <svg
+    class="sound-icon sound-icon-on"
+    viewBox="0 0 24 24"
+    width="16"
+    height="16"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="2"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    aria-hidden="true"
+  >
+    <path d="M11 5 6 9H2v6h4l5 4V5z"></path>
+    <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+    <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
+  </svg>
+  <svg
+    class="sound-icon sound-icon-off"
+    viewBox="0 0 24 24"
+    width="16"
+    height="16"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="2"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    aria-hidden="true"
+  >
+    <path d="M11 5 6 9H2v6h4l5 4V5z"></path>
+    <path d="m22 9-6 6"></path>
+    <path d="m16 9 6 6"></path>
+  </svg>
+  <span data-sound-label>Sound on</span>
+</button>
+
+<script>
+  import {
+    SOUND_CHANGE_EVENT,
+    isSoundOn,
+    playSound,
+    setSoundOn,
+  } from "../../lib/sound";
+
+  const toggles = document.querySelectorAll<HTMLButtonElement>(
+    "[data-sound-toggle]",
+  );
+
+  const render = (on: boolean) => {
+    for (const toggle of toggles) {
+      toggle.setAttribute("aria-pressed", String(on));
+      const label = toggle.querySelector("[data-sound-label]");
+      if (label) label.textContent = on ? "Sound on" : "Sound off";
+    }
+  };
+
+  render(isSoundOn());
+
+  for (const toggle of toggles) {
+    toggle.addEventListener("click", () => {
+      const on = !isSoundOn();
+      setSoundOn(on);
+      if (on) playSound("boop");
+    });
+  }
+
+  window.addEventListener(SOUND_CHANGE_EVENT, () => render(isSoundOn()));
+</script>
+
+<style>
+  .sound-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4375rem;
+    border: 1px solid var(--blog-border-strong);
+    border-radius: 999px;
+    background: transparent;
+    color: var(--blog-text-muted);
+    cursor: pointer;
+    padding: 0.3125rem 0.75rem 0.3125rem 0.625rem;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 0.75rem;
+    line-height: 1;
+    transition:
+      color 150ms ease,
+      border-color 150ms ease;
+  }
+
+  .sound-toggle:hover {
+    border-color: var(--blog-accent);
+    color: var(--blog-accent);
+  }
+
+  .sound-toggle:focus-visible {
+    outline: 2px solid var(--blog-accent);
+    outline-offset: 3px;
+  }
+
+  .sound-toggle[aria-pressed="true"] .sound-icon-off,
+  .sound-toggle[aria-pressed="false"] .sound-icon-on {
+    display: none;
+  }
+</style>

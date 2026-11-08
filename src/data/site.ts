@@ -256,6 +256,7 @@ export const siteData = {
     { label: "Skills", href: "#skills" },
     // { label: "Case Studies", href: "#case-studies" },
     // { label: "Writing", href: "#writing" },
+    { label: "Blog", href: "/blog" },
     { label: "Contact", href: "#contact" },
   ],
 };
