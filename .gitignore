@@ -25,3 +25,6 @@ dist-ssr
 *.sw?
 graphify-out
 .vscode
+
+# Local AI agent skills (installed per machine; see skills-lock.json)
+.agents/
