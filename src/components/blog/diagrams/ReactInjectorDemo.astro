@@ -1,0 +1,906 @@
+---
+/**
+ * mountReact, simulated. The reader picks which <div id> placeholders the
+ * JSP page contains, then fires DOMContentLoaded. For each mountReact call a
+ * scan line sweeps the page (querySelector looking for the div): found → the
+ * lazy chunk downloads, Suspense shows "Loading...", and a small React widget
+ * renders into the slot; not found → nothing happens and nothing downloads.
+ */
+import DemoWindow from "./DemoWindow.astro";
+
+const features = [
+  {
+    id: "usage-chart",
+    chunk: "usage-chart.js",
+    kb: 4.2,
+    onPage: true,
+  },
+  {
+    id: "invite-modal",
+    chunk: "invite-modal.js",
+    kb: 3.1,
+    onPage: false,
+  },
+  {
+    id: "activity-feed",
+    chunk: "activity-feed.js",
+    kb: 5.6,
+    onPage: true,
+  },
+  {
+    id: "comments-panel",
+    chunk: "comments-panel.js",
+    kb: 4.8,
+    onPage: false,
+  },
+] as const;
+
+const bars = [38, 62, 45, 80, 56, 92, 70];
+const feed = [
+  { who: "Maya", what: "moved", item: "Q3 plan", when: "2m" },
+  { who: "Leo", what: "commented on", item: "Launch", when: "9m" },
+  { who: "Sam", what: "closed", item: "Bug #41", when: "1h" },
+];
+---
+
+<figure class="blog-figure injector-demo" data-injector-demo>
+  <fieldset class="picker">
+    <legend>Divs in this JSP page</legend>
+    {
+      features.map((feature) => (
+        <label class="pick">
+          <input
+            type="checkbox"
+            value={feature.id}
+            checked={feature.onPage}
+            data-pick
+          />
+          <code>#{feature.id}</code>
+        </label>
+      ))
+    }
+  </fieldset>
+
+  <DemoWindow url="/settings">
+    <div class="layout">
+      <div class="page" aria-hidden="true" data-page>
+        <span class="scan" data-scan></span>
+        <p class="zone zone-jsp">page.jsp</p>
+
+        <div class="jsp-block">
+          <span>Account details</span><i></i>
+        </div>
+
+        <div class="slot" data-slot="usage-chart" data-state="idle">
+          <span class="slot-id">&lt;div id="usage-chart"&gt;</span>
+          <span class="slot-loading">Loading...</span>
+          <div class="widget">
+            <div class="widget-head">
+              <span>Usage</span>
+              <span class="widget-meta">+12% this week</span>
+            </div>
+            <div class="bars">
+              {
+                bars.map((height, index) => (
+                  <i style={`--h: ${height}%; --i: ${index}`} />
+                ))
+              }
+            </div>
+          </div>
+        </div>
+
+        <div class="slot" data-slot="invite-modal" data-state="idle">
+          <span class="slot-id">&lt;div id="invite-modal"&gt;</span>
+          <span class="slot-loading">Loading...</span>
+          <div class="widget">
+            <div class="widget-head">
+              <span>Invite teammates</span>
+              <span class="avatars">
+                <i style="--c: #f5a524">MA</i>
+                <i style="--c: #8b7cf0">LK</i>
+                <i style="--c: #34b27b">SR</i>
+              </span>
+            </div>
+            <span class="widget-hint">They'll get an email with a link.</span>
+            <div class="invite-row">
+              <span class="fake-input">name@company.com</span>
+              <span class="mini-button">Invite</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="jsp-block">
+          <span>Notifications</span><i></i>
+        </div>
+
+        <div class="slot" data-slot="activity-feed" data-state="idle">
+          <span class="slot-id">&lt;div id="activity-feed"&gt;</span>
+          <span class="slot-loading">Loading...</span>
+          <div class="widget">
+            <div class="widget-head">
+              <span>Activity</span>
+              <span class="widget-meta live">Live</span>
+            </div>
+            <div class="feed">
+              {
+                feed.map((entry, index) => (
+                  <div class="feed-row" style={`--i: ${index}`}>
+                    <i />
+                    <span>
+                      <b>{entry.who}</b> {entry.what} <b>{entry.item}</b>
+                    </span>
+                    <time>{entry.when}</time>
+                  </div>
+                ))
+              }
+            </div>
+          </div>
+        </div>
+
+        <div class="slot" data-slot="comments-panel" data-state="idle">
+          <span class="slot-id">&lt;div id="comments-panel"&gt;</span>
+          <span class="slot-loading">Loading...</span>
+          <div class="widget">
+            <div class="widget-head">
+              <span>Comments</span>
+              <span class="widget-meta">2</span>
+            </div>
+            <span class="bubble" style="--i: 0">Can we ship this Friday?</span>
+            <span class="bubble bubble-me" style="--i: 1"
+              >Yes, right after review.</span
+            >
+          </div>
+        </div>
+
+        <div class="jsp-block">
+          <span>Security</span><i></i>
+        </div>
+      </div>
+
+      <div class="side">
+        <p class="zone zone-react">main.tsx</p>
+        <ol class="registry" aria-label="mountReact calls">
+          {
+            features.map((feature) => (
+              <li class="call" data-call={feature.id} data-state="idle">
+                <code>mountReact("#{feature.id}")</code>
+                <span class="call-status" data-call-status>
+                  waiting
+                </span>
+              </li>
+            ))
+          }
+        </ol>
+
+        <p class="zone zone-network">Network</p>
+        <ul class="network" data-network aria-label="Downloaded chunks">
+          <li class="network-empty" data-network-empty>
+            nothing downloaded yet
+          </li>
+        </ul>
+      </div>
+    </div>
+  </DemoWindow>
+
+  <div class="demo-controls">
+    <button type="button" class="demo-button" data-run>
+      Fire DOMContentLoaded
+    </button>
+    <button type="button" class="demo-button demo-button-ghost" data-reset>
+      Reset
+    </button>
+    <span class="demo-status" data-status aria-live="polite"
+      >Pick the divs, then fire the event</span
+    >
+  </div>
+
+  <figcaption>
+    Every feature is one <code>mountReact</code> call. No div on the page means no
+    render and no download.
+  </figcaption>
+</figure>
+
+<script>
+  import { playSound } from "../../../lib/sound";
+
+  const CHUNKS: Record<string, { file: string; kb: number }> = {
+    "usage-chart": { file: "usage-chart.js", kb: 4.2 },
+    "invite-modal": { file: "invite-modal.js", kb: 3.1 },
+    "activity-feed": { file: "activity-feed.js", kb: 5.6 },
+    "comments-panel": { file: "comments-panel.js", kb: 4.8 },
+  };
+
+  const SCAN_MS = 520;
+  const LOAD_MS = 650;
+
+  const wait = (ms: number) =>
+    new Promise((resolve) => window.setTimeout(resolve, ms));
+
+  const reducedMotion = () =>
+    window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  for (const demo of document.querySelectorAll<HTMLElement>(
+    "[data-injector-demo]",
+  )) {
+    const picks = [...demo.querySelectorAll<HTMLInputElement>("[data-pick]")];
+    const run = demo.querySelector<HTMLButtonElement>("[data-run]");
+    const reset = demo.querySelector<HTMLButtonElement>("[data-reset]");
+    const status = demo.querySelector<HTMLElement>("[data-status]");
+    const network = demo.querySelector<HTMLElement>("[data-network]");
+    const empty = demo.querySelector<HTMLElement>("[data-network-empty]");
+    const page = demo.querySelector<HTMLElement>("[data-page]");
+    const scan = demo.querySelector<HTMLElement>("[data-scan]");
+    if (!run || !reset || !status || !network || !empty || !page || !scan)
+      continue;
+
+    let token = 0;
+
+    const slotFor = (id: string) =>
+      demo.querySelector<HTMLElement>(`[data-slot="${id}"]`);
+    const callFor = (id: string) =>
+      demo.querySelector<HTMLElement>(`[data-call="${id}"]`);
+
+    const syncSlots = () => {
+      for (const pick of picks) {
+        const slot = slotFor(pick.value);
+        if (slot) slot.hidden = !pick.checked;
+      }
+    };
+
+    const clear = () => {
+      token++;
+      for (const pick of picks) {
+        pick.disabled = false;
+        const slot = slotFor(pick.value);
+        const call = callFor(pick.value);
+        if (slot) slot.dataset.state = "idle";
+        if (call) {
+          call.dataset.state = "idle";
+          const label = call.querySelector("[data-call-status]");
+          if (label) label.textContent = "waiting";
+        }
+      }
+      scan.classList.remove("is-on");
+      network.querySelectorAll("[data-chunk]").forEach((item) => item.remove());
+      empty.hidden = false;
+      run.disabled = false;
+      status.textContent = "Pick the divs, then fire the event";
+    };
+
+    const setCall = (id: string, state: string, label: string) => {
+      const call = callFor(id);
+      if (!call) return;
+      call.dataset.state = state;
+      const text = call.querySelector("[data-call-status]");
+      if (text) text.textContent = label;
+    };
+
+    // The scan line sweeps down the page: it stops on the div if it exists,
+    // otherwise it runs to the bottom and finds nothing.
+    const sweep = async (slot: HTMLElement | null) => {
+      const pageBox = page.getBoundingClientRect();
+      const end = slot
+        ? slot.getBoundingClientRect().top - pageBox.top + slot.offsetHeight / 2
+        : pageBox.height;
+      if (reducedMotion()) {
+        await wait(SCAN_MS);
+        return;
+      }
+      scan.classList.add("is-on");
+      const animation = scan.animate(
+        [{ transform: "translateY(0)" }, { transform: `translateY(${end}px)` }],
+        { duration: SCAN_MS, easing: "ease-in-out", fill: "forwards" },
+      );
+      await animation.finished.catch(() => undefined);
+      scan.classList.remove("is-on");
+    };
+
+    const addChunk = (id: string) => {
+      const { file, kb } = CHUNKS[id];
+      const item = document.createElement("li");
+      item.dataset.chunk = "";
+      item.className = "network-chunk";
+      item.style.setProperty("--load", `${LOAD_MS}ms`);
+      item.innerHTML = `<span>GET ${file}</span><span class="chunk-size">${kb} kB</span><span class="chunk-bar"></span>`;
+      network.append(item);
+    };
+
+    const fire = async () => {
+      clear();
+      const current = token;
+      run.disabled = true;
+      picks.forEach((pick) => (pick.disabled = true));
+      status.textContent = "DOMContentLoaded fired…";
+
+      let rendered = 0;
+      let downloaded = 0;
+      let saved = 0;
+
+      for (const pick of picks) {
+        if (current !== token) return;
+        const id = pick.value;
+        const slot = pick.checked ? slotFor(id) : null;
+
+        setCall(id, "checking", `looking for #${id}…`);
+        await sweep(slot);
+        if (current !== token) return;
+
+        if (!slot) {
+          setCall(id, "skipped", "no div · skipped");
+          saved += CHUNKS[id].kb;
+          continue;
+        }
+
+        setCall(id, "found", "found it · loading");
+        slot.dataset.state = "loading";
+        empty.hidden = true;
+        addChunk(id);
+        playSound("tick");
+
+        await wait(LOAD_MS);
+        if (current !== token) return;
+        slot.dataset.state = "rendered";
+        setCall(id, "rendered", "rendered ✓");
+        playSound("pop");
+        rendered++;
+        downloaded += CHUNKS[id].kb;
+        await wait(250);
+      }
+
+      if (current !== token) return;
+      const kb = (value: number) => `${value.toFixed(1)} kB`;
+      status.textContent =
+        `${rendered} of ${picks.length} features rendered · ${kb(downloaded)} downloaded` +
+        (saved > 0 ? ` · ${kb(saved)} never requested` : "");
+      run.disabled = false;
+      picks.forEach((pick) => (pick.disabled = false));
+    };
+
+    picks.forEach((pick) =>
+      pick.addEventListener("change", () => {
+        clear();
+        syncSlots();
+      }),
+    );
+    run.addEventListener("click", fire);
+    reset.addEventListener("click", () => {
+      clear();
+      run.focus();
+    });
+
+    syncSlots();
+  }
+</script>
+
+<style>
+  /* Div picker (dark, outside the window) */
+  .picker {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem 1rem;
+    margin: 0 0 0.75rem;
+    border: 0;
+    padding: 0;
+  }
+
+  .picker legend {
+    float: left;
+    margin-right: 0.25rem;
+    padding: 0;
+    color: var(--blog-text-muted);
+    font-size: 0.875rem;
+  }
+
+  .pick {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    cursor: pointer;
+    font-size: 0.875rem;
+  }
+
+  .pick input {
+    width: 1rem;
+    height: 1rem;
+    accent-color: var(--blog-accent);
+  }
+
+  .pick code {
+    font-size: 0.8125rem;
+  }
+
+  /* Window content */
+  .layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+    gap: 1.25rem;
+    padding: 1.25rem;
+  }
+
+  .zone {
+    margin: 0 0 0.625rem;
+    font-size: 0.8125rem;
+    font-weight: 600;
+  }
+
+  .zone-jsp {
+    color: var(--demo-jsp);
+  }
+
+  .zone-react {
+    color: var(--demo-react);
+  }
+
+  .zone-network {
+    margin-top: 1rem;
+    color: var(--demo-muted);
+  }
+
+  .page {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  /* querySelector, visualised */
+  .scan {
+    position: absolute;
+    top: 0;
+    right: -0.375rem;
+    left: -0.375rem;
+    z-index: 2;
+    height: 2px;
+    border-radius: 1px;
+    background: #f5a524;
+    box-shadow: 0 0 0.75rem 0.125rem rgb(245 165 36 / 0.55);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 150ms ease;
+  }
+
+  .scan.is-on {
+    opacity: 1;
+  }
+
+  .jsp-block {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    height: 2.5rem;
+    border-radius: 0.25rem;
+    background: var(--demo-jsp-soft);
+    padding: 0 0.75rem;
+    color: #7a3e00;
+    font-size: 0.75rem;
+    font-weight: 600;
+  }
+
+  .jsp-block i {
+    width: 32%;
+    height: 0.375rem;
+    border-radius: 0.125rem;
+    background: #f2dfc0;
+  }
+
+  /* Placeholder div → Suspense fallback → rendered widget */
+  .slot {
+    position: relative;
+    display: grid;
+    min-height: 2.75rem;
+    align-items: center;
+    overflow: hidden;
+    border: 1.5px dashed var(--demo-border-strong);
+    border-radius: 0.25rem;
+    padding: 0.375rem 0.75rem;
+    transition:
+      min-height 380ms cubic-bezier(0.22, 1, 0.36, 1),
+      border-color 250ms ease,
+      background-color 250ms ease;
+  }
+
+  .slot[hidden] {
+    display: none;
+  }
+
+  .slot-id,
+  .slot-loading {
+    grid-area: 1 / 1;
+    transition: opacity 200ms ease;
+  }
+
+  .slot-id {
+    color: var(--demo-muted);
+    font-size: 0.6875rem;
+  }
+
+  .slot-loading {
+    color: var(--demo-react);
+    font-size: 0.8125rem;
+    opacity: 0;
+  }
+
+  .slot[data-state="loading"],
+  .slot[data-state="rendered"] {
+    border-color: transparent;
+    background: var(--demo-react-soft);
+  }
+
+  .slot[data-state="rendered"] {
+    min-height: 6.5rem;
+  }
+
+  .slot[data-state="loading"] .slot-id,
+  .slot[data-state="rendered"] .slot-id,
+  .slot[data-state="rendered"] .slot-loading {
+    opacity: 0;
+  }
+
+  .slot[data-state="loading"] .slot-loading {
+    opacity: 1;
+    animation: pulse 700ms ease-in-out infinite alternate;
+  }
+
+  /* Widgets (absolutely placed, so the slot height animates smoothly) */
+  .widget {
+    position: absolute;
+    inset: 0.625rem 0.75rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4375rem;
+    visibility: hidden;
+    opacity: 0;
+  }
+
+  .slot[data-state="rendered"] .widget {
+    visibility: visible;
+    opacity: 1;
+    animation: widget-in 360ms 120ms both ease-out;
+  }
+
+  .widget-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    color: var(--demo-text);
+    font-size: 0.75rem;
+    font-weight: 700;
+  }
+
+  .widget-meta {
+    color: var(--demo-react);
+    font-size: 0.6875rem;
+    font-weight: 600;
+  }
+
+  .live::before {
+    content: "";
+    display: inline-block;
+    width: 0.375rem;
+    height: 0.375rem;
+    margin-right: 0.3125rem;
+    border-radius: 50%;
+    background: #34b27b;
+    vertical-align: 0.0625rem;
+  }
+
+  /* Usage chart */
+  .bars {
+    display: flex;
+    flex: 1;
+    align-items: flex-end;
+    gap: 0.3125rem;
+  }
+
+  .bars i {
+    flex: 1;
+    height: var(--h);
+    border-radius: 0.125rem 0.125rem 0 0;
+    background: #8b7cf0;
+    transform-origin: bottom;
+  }
+
+  .bars i:last-child {
+    background: var(--demo-react);
+  }
+
+  .slot[data-state="rendered"] .bars i {
+    animation: bar-grow 520ms calc(180ms + var(--i) * 55ms) both
+      cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  /* Invite */
+  .avatars {
+    display: flex;
+  }
+
+  .avatars i {
+    display: grid;
+    width: 1.5rem;
+    height: 1.5rem;
+    margin-left: -0.25rem;
+    place-items: center;
+    border: 2px solid var(--demo-react-soft);
+    border-radius: 50%;
+    background: var(--c);
+    color: #fff;
+    font-size: 0.5rem;
+    font-style: normal;
+    font-weight: 700;
+  }
+
+  .widget-hint {
+    color: var(--demo-muted);
+    font-size: 0.6875rem;
+  }
+
+  .invite-row {
+    display: flex;
+    gap: 0.375rem;
+    margin-top: auto;
+  }
+
+  .fake-input {
+    flex: 1;
+    min-width: 0;
+    border-radius: 0.25rem;
+    background: #fff;
+    color: #a8a29e;
+    padding: 0.3125rem 0.5rem;
+    font-size: 0.6875rem;
+  }
+
+  .mini-button {
+    border-radius: 0.25rem;
+    background: var(--demo-react);
+    color: #fff;
+    padding: 0.3125rem 0.625rem;
+    font-size: 0.6875rem;
+    font-weight: 600;
+  }
+
+  /* Activity feed */
+  .feed {
+    display: grid;
+    gap: 0.25rem;
+  }
+
+  .feed-row {
+    display: flex;
+    align-items: center;
+    gap: 0.4375rem;
+    color: var(--demo-muted);
+    font-size: 0.6875rem;
+    white-space: nowrap;
+  }
+
+  .feed-row span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .feed-row b {
+    color: var(--demo-text);
+    font-weight: 600;
+  }
+
+  .feed-row i {
+    width: 0.375rem;
+    height: 0.375rem;
+    flex-shrink: 0;
+    border-radius: 50%;
+    background: #8b7cf0;
+  }
+
+  .feed-row time {
+    margin-left: auto;
+    color: #a8a29e;
+  }
+
+  .slot[data-state="rendered"] .feed-row {
+    animation: row-in 360ms calc(200ms + var(--i) * 120ms) both ease-out;
+  }
+
+  /* Comments */
+  .bubble {
+    align-self: flex-start;
+    max-width: 85%;
+    border-radius: 0.5rem 0.5rem 0.5rem 0.125rem;
+    background: #fff;
+    color: var(--demo-text);
+    padding: 0.25rem 0.5rem;
+    font-size: 0.6875rem;
+  }
+
+  .bubble-me {
+    align-self: flex-end;
+    border-radius: 0.5rem 0.5rem 0.125rem 0.5rem;
+    background: var(--demo-react);
+    color: #fff;
+  }
+
+  .slot[data-state="rendered"] .bubble {
+    animation: bubble-in 320ms calc(220ms + var(--i) * 260ms) both
+      cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  @keyframes pulse {
+    from {
+      opacity: 0.4;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  @keyframes widget-in {
+    from {
+      opacity: 0;
+      transform: translateY(0.375rem);
+    }
+  }
+
+  @keyframes bar-grow {
+    from {
+      transform: scaleY(0);
+    }
+  }
+
+  @keyframes row-in {
+    from {
+      opacity: 0;
+      transform: translateX(-0.5rem);
+    }
+  }
+
+  @keyframes bubble-in {
+    from {
+      opacity: 0;
+      transform: scale(0.6);
+    }
+  }
+
+  /* main.tsx registry */
+  .registry,
+  .network {
+    display: grid;
+    gap: 0.375rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .call {
+    display: flex;
+    flex-direction: column;
+    gap: 0.125rem;
+    margin: 0;
+    border-radius: 0.25rem;
+    background: var(--demo-surface);
+    padding: 0.375rem 0.625rem;
+    transition:
+      background-color 200ms ease,
+      opacity 200ms ease;
+  }
+
+  .call code {
+    border-radius: 0;
+    background: none;
+    color: var(--demo-text);
+    padding: 0;
+    font-size: 0.6875rem;
+  }
+
+  .call-status {
+    color: var(--demo-muted);
+    font-size: 0.8125rem;
+  }
+
+  .call[data-state="checking"] {
+    background: var(--demo-jsp-soft);
+  }
+
+  .call[data-state="checking"] .call-status {
+    color: var(--demo-jsp);
+  }
+
+  .call[data-state="found"],
+  .call[data-state="rendered"] {
+    background: var(--demo-react-soft);
+  }
+
+  .call[data-state="rendered"] .call-status {
+    color: var(--demo-react);
+    font-weight: 700;
+  }
+
+  .call[data-state="skipped"] {
+    opacity: 0.45;
+  }
+
+  /* Network */
+  .network li {
+    margin: 0;
+    font-size: 0.6875rem;
+  }
+
+  .network-empty {
+    color: var(--demo-muted);
+  }
+
+  .network-empty[hidden] {
+    display: none;
+  }
+
+  .network :global(.network-chunk) {
+    position: relative;
+    display: flex;
+    justify-content: space-between;
+    gap: 0.5rem;
+    overflow: hidden;
+    margin: 0;
+    border-radius: 0.25rem;
+    background: var(--demo-surface);
+    color: var(--demo-react);
+    padding: 0.25rem 0.5rem;
+    font-size: 0.6875rem;
+    line-height: 1.5;
+    animation: chunk-in 300ms ease;
+  }
+
+  .network :global(.chunk-size) {
+    color: var(--demo-muted);
+  }
+
+  .network :global(.chunk-bar) {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: #8b7cf0;
+    transform-origin: left;
+    animation: chunk-load var(--load) linear both;
+  }
+
+  @keyframes chunk-in {
+    from {
+      opacity: 0;
+      transform: translateX(-0.5rem);
+    }
+  }
+
+  @keyframes chunk-load {
+    from {
+      transform: scaleX(0);
+    }
+  }
+
+  @media (max-width: 36rem) {
+    .layout {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .slot,
+    .slot-id,
+    .slot-loading,
+    .call {
+      transition: none;
+    }
+
+    .slot[data-state="loading"] .slot-loading,
+    .slot[data-state="rendered"] .widget,
+    .slot[data-state="rendered"] .bars i,
+    .slot[data-state="rendered"] .feed-row,
+    .slot[data-state="rendered"] .bubble,
+    .network :global(.network-chunk),
+    .network :global(.chunk-bar) {
+      animation: none;
+    }
+  }
+</style>

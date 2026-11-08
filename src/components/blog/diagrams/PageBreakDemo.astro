@@ -35,8 +35,8 @@ const rules = [
   {
     n: 4,
     source: "legacy",
-    code: "button { text-transform: uppercase }",
-    effect: "dropdown and buttons shout",
+    code: ".editor label { color: #a8a29e }",
+    effect: "React’s labels fade and shrink",
     delay: 600,
   },
 ] as const;
@@ -55,8 +55,8 @@ const legacyRules = rules.filter((rule) => rule.source === "legacy");
     </div>
 
     <div class="app-header" aria-hidden="true">
-      <span class="app-logo"><span class="app-logo-mark"></span>Beamer</span>
-      <span class="app-tab app-tab-active">Posts</span>
+      <span class="app-logo"><span class="app-logo-mark"></span></span>
+      <span class="app-tab app-tab-active">Docs</span>
       <span class="app-tab">Analytics</span>
       <span class="app-tab">Settings</span>
       <span class="app-avatar"></span>
@@ -65,7 +65,7 @@ const legacyRules = rules.filter((rule) => rule.source === "legacy");
     <div class="page" aria-hidden="true">
       <section class="legacy">
         <p class="zone">Legacy JSP</p>
-        <p class="legacy-heading">New post</p>
+        <p class="legacy-heading">New doc</p>
 
         <span class="field-label">Title</span>
         <div
@@ -75,7 +75,7 @@ const legacyRules = rules.filter((rule) => rule.source === "legacy");
           data-source="tailwind"
           style="--d: 120ms"
         >
-          Spring release notes
+          Team offsite plan
         </div>
 
         <span class="field-label">Content</span>
@@ -95,8 +95,8 @@ const legacyRules = rules.filter((rule) => rule.source === "legacy");
                 data-breaks
                 data-rule="2"
                 data-source="tailwind"
-                style="--d: 300ms">changelog</span
-              > for details.
+                style="--d: 300ms">planning guide</span
+              > first.
             </p>
             <ul
               class="legacy-list"
@@ -105,8 +105,8 @@ const legacyRules = rules.filter((rule) => rule.source === "legacy");
               data-source="tailwind"
               style="--d: 440ms"
             >
-              <li>Faster search</li>
-              <li>New dark mode</li>
+              <li>Book the venue</li>
+              <li>Share the agenda</li>
             </ul>
           </div>
         </div>
@@ -134,34 +134,28 @@ const legacyRules = rules.filter((rule) => rule.source === "legacy");
           <div class="slot">React mounts here</div>
 
           <div class="panel">
-            <p class="panel-title">AI content generator</p>
-            <span class="panel-label">Tone</span>
-            <div
-              class="react-select"
+            <p class="panel-title">AI writing assistant</p>
+            <span
+              class="panel-label"
               data-breaks
               data-rule="4"
               data-source="legacy"
-              style="--d: 600ms"
+              style="--d: 600ms">Tone</span
             >
+            <div class="react-select">
               <span>Professional</span><span class="chevron">⌄</span>
             </div>
-            <span class="panel-label">Brief</span>
+            <span
+              class="panel-label"
+              data-breaks
+              data-rule="4"
+              data-source="legacy"
+              style="--d: 660ms">Brief</span
+            >
             <div class="react-textarea">Write a short brief…</div>
             <div class="actions">
-              <span
-                class="react-button"
-                data-breaks
-                data-rule="4"
-                data-source="legacy"
-                style="--d: 660ms">Generate</span
-              >
-              <span
-                class="react-button react-button-ghost"
-                data-breaks
-                data-rule="4"
-                data-source="legacy"
-                style="--d: 720ms">Cancel</span
-              >
+              <span class="react-button">Generate</span>
+              <span class="react-button react-button-ghost">Cancel</span>
             </div>
           </div>
         </div>
@@ -186,7 +180,7 @@ const legacyRules = rules.filter((rule) => rule.source === "legacy");
           </ol>
         </div>
         <div class="styles-group" data-source="legacy">
-          <p class="styles-source">From legacy styles.css → React</p>
+          <p class="styles-source">From the legacy CSS → React</p>
           <ol class="rule-list" start="4">
             {
               legacyRules.map((rule) => (
@@ -346,11 +340,11 @@ const legacyRules = rules.filter((rule) => rule.source === "legacy");
 
   .url {
     margin-inline: auto;
-    border-radius: 0.375rem;
+    border-radius: 0.25rem;
     background: var(--demo-bg);
     color: var(--demo-muted);
     padding: 0.125rem 0.75rem;
-    font-family: "JetBrains Mono", monospace;
+    font-family: var(--demo-font-ui);
     font-size: 0.75rem;
     transform: translateX(-1.25rem);
   }
@@ -360,7 +354,7 @@ const legacyRules = rules.filter((rule) => rule.source === "legacy");
     grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
     gap: 1.5rem;
     padding: 1.25rem 1.25rem 1.5rem;
-    font-family: "Inter", sans-serif;
+    font-family: var(--demo-font-ui);
     font-size: 1rem;
     line-height: 1.5;
   }
@@ -368,10 +362,8 @@ const legacyRules = rules.filter((rule) => rule.source === "legacy");
   .zone {
     margin: 0 0 0.875rem;
     color: var(--demo-muted);
-    font-family: "JetBrains Mono", monospace;
-    font-size: 0.6875rem;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
+    font-family: var(--demo-font-ui);
+    font-size: 0.8125rem;
   }
 
   .zone-react {
@@ -386,7 +378,7 @@ const legacyRules = rules.filter((rule) => rule.source === "legacy");
     background: #1f3a5f;
     padding: 0.625rem 1.25rem;
     color: #dbe5f1;
-    font-family: "Inter", sans-serif;
+    font-family: var(--demo-font-ui);
     font-size: 0.8125rem;
   }
 
@@ -560,17 +552,17 @@ const legacyRules = rules.filter((rule) => rule.source === "legacy");
     display: grid;
     place-items: center;
     border: 1.5px dashed var(--demo-border-strong);
-    border-radius: 0.625rem;
+    border-radius: 0.25rem;
     color: var(--demo-muted);
-    font-family: "JetBrains Mono", monospace;
-    font-size: 0.75rem;
+    font-family: var(--demo-font-ui);
+    font-size: 0.875rem;
     transition: opacity 250ms ease;
   }
 
   .panel {
     position: relative;
     border: 1px solid var(--demo-border);
-    border-radius: 0.75rem;
+    border-radius: 0.25rem;
     background: var(--demo-bg);
     box-shadow: 0 1px 3px rgb(16 24 40 / 0.08);
     padding: 1rem;
@@ -597,7 +589,7 @@ const legacyRules = rules.filter((rule) => rule.source === "legacy");
   .react-select,
   .react-textarea {
     border: 1px solid var(--demo-border-strong);
-    border-radius: 0.375rem;
+    border-radius: 0.25rem;
     background: var(--demo-bg);
     font-size: 0.875rem;
   }
@@ -627,7 +619,7 @@ const legacyRules = rules.filter((rule) => rule.source === "legacy");
 
   .react-button {
     border: 1px solid #111827;
-    border-radius: 0.375rem;
+    border-radius: 0.25rem;
     background: #111827;
     color: #ffffff;
     padding: 0.375rem 0.875rem;
@@ -674,12 +666,10 @@ const legacyRules = rules.filter((rule) => rule.source === "legacy");
     border-radius: 50%;
     background: var(--source);
     color: #ffffff;
-    font-family: "JetBrains Mono", monospace;
+    font-family: var(--demo-font-ui);
     font-size: 0.6875rem;
-    font-weight: 800;
+    font-weight: 700;
     line-height: 1;
-    letter-spacing: 0;
-    text-transform: none;
     transform: scale(0);
     transition: transform 300ms var(--ease-pop);
   }
@@ -696,11 +686,9 @@ const legacyRules = rules.filter((rule) => rule.source === "legacy");
     margin: 0 0 0.75rem;
     border-bottom: 2px solid var(--demo-text);
     padding-bottom: 0.25rem;
-    font-family: "JetBrains Mono", monospace;
-    font-size: 0.6875rem;
-    font-weight: 700;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
+    font-family: var(--demo-font-ui);
+    font-size: 0.8125rem;
+    font-weight: 600;
   }
 
   .styles-groups {
@@ -720,7 +708,7 @@ const legacyRules = rules.filter((rule) => rule.source === "legacy");
   .styles-source {
     margin: 0 0 0.5rem;
     color: var(--source);
-    font-family: "JetBrains Mono", monospace;
+    font-family: var(--demo-font-ui);
     font-size: 0.6875rem;
     font-weight: 700;
   }
@@ -752,7 +740,7 @@ const legacyRules = rules.filter((rule) => rule.source === "legacy");
     border-radius: 50%;
     background: var(--demo-border-strong);
     color: #ffffff;
-    font-family: "JetBrains Mono", monospace;
+    font-family: var(--demo-font-ui);
     font-size: 0.625rem;
     font-weight: 800;
     transform: translateY(0.1875rem);
@@ -765,7 +753,7 @@ const legacyRules = rules.filter((rule) => rule.source === "legacy");
     background: none;
     padding: 0;
     color: var(--demo-text);
-    font-family: "JetBrains Mono", monospace;
+    font-family: var(--demo-font-ui);
     font-size: 0.75rem;
     overflow-wrap: anywhere;
   }
@@ -829,10 +817,10 @@ const legacyRules = rules.filter((rule) => rule.source === "legacy");
     list-style: none;
   }
 
-  .break-demo[data-mounted="true"] .react-select,
-  .break-demo[data-mounted="true"] .react-button {
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
+  .break-demo[data-mounted="true"] .panel-label {
+    color: #a8a29e;
+    font-size: 0.625rem;
+    font-weight: 400;
   }
 
   @keyframes break-demo-shake {
@@ -865,14 +853,14 @@ const legacyRules = rules.filter((rule) => rule.source === "legacy");
 
   .toggle {
     border: 0;
-    border-radius: 0.375rem;
+    border-radius: 0.25rem;
     background: var(--blog-accent);
     color: hsl(var(--primary-foreground));
     cursor: pointer;
     padding: 0.5rem 1rem;
-    font-family: "JetBrains Mono", monospace;
-    font-size: 0.8125rem;
-    font-weight: 700;
+    font-family: var(--demo-font-ui);
+    font-size: 0.9375rem;
+    font-weight: 600;
   }
 
   .toggle:hover {
@@ -886,8 +874,8 @@ const legacyRules = rules.filter((rule) => rule.source === "legacy");
 
   .status {
     color: var(--blog-text-muted);
-    font-family: "JetBrains Mono", monospace;
-    font-size: 0.8125rem;
+    font-family: var(--demo-font-ui);
+    font-size: 0.9375rem;
   }
 
   .break-demo[data-mounted="true"] .status {

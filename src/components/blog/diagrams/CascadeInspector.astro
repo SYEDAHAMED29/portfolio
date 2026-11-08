@@ -1,0 +1,902 @@
+---
+/**
+ * "Inspect element" for the Preflight story. A small editor page with
+ * DevTools docked beside it. Click an element (or pick it in the pane) and:
+ *   - the page highlights it DevTools-style (blue content, green padding),
+ *     measured from the real layout;
+ *   - the Styles pane lists every rule that matches it, later-loaded rules on
+ *     top, with overridden declarations struck through;
+ *   - one plain-English line says why the winner won.
+ * A switch moves Tailwind Preflight between Global, Off and Scoped, and the
+ * page's real CSS follows. Used three times along the post with different
+ * starting modes.
+ */
+interface Props {
+  mode?: "global" | "off" | "scoped";
+  select?: "title" | "link" | "list" | "select" | "brief";
+}
+
+const { mode = "global", select = "title" } = Astro.props;
+
+const modes = [
+  { value: "global", label: "Global" },
+  { value: "off", label: "Off" },
+  { value: "scoped", label: "Scoped to .react-root" },
+];
+
+const picks = [
+  { el: "title", tag: "input" },
+  { el: "link", tag: "a" },
+  { el: "list", tag: "ul" },
+  { el: "select", tag: "button" },
+  { el: "brief", tag: "textarea" },
+];
+---
+
+<figure
+  class="blog-figure cascade"
+  data-cascade
+  data-mode={mode}
+  data-select={select}
+>
+  <div
+    class="switch"
+    role="group"
+    aria-label="Where Tailwind Preflight applies"
+  >
+    <span class="switch-label">Tailwind Preflight</span>
+    {
+      modes.map((item) => (
+        <button
+          type="button"
+          class="switch-option"
+          data-mode-option={item.value}
+          aria-pressed={item.value === mode ? "true" : "false"}
+        >
+          {item.label}
+        </button>
+      ))
+    }
+  </div>
+
+  <div class="frame">
+    <div class="bar" aria-hidden="true">
+      <span class="dot dot-red"></span>
+      <span class="dot dot-yellow"></span>
+      <span class="dot dot-green"></span>
+      <span class="url">editor.jsp</span>
+    </div>
+
+    <div class="split">
+      <div class="preview" data-preview>
+        <div class="page" aria-hidden="true">
+          <span class="zone zone-jsp">Legacy JSP</span>
+          <span class="label">Title</span>
+          <input
+            class="title"
+            value="Team offsite plan"
+            readonly
+            tabindex="-1"
+            data-el="title"
+          />
+          <p class="copy">
+            Read the <a href="#cascade-guide" tabindex="-1" data-el="link"
+              >planning guide</a
+            > first.
+          </p>
+          <ul data-el="list">
+            <li>Book the venue</li>
+            <li>Share the agenda</li>
+          </ul>
+
+          <div class="react-root">
+            <span class="zone zone-react">.react-root</span>
+            <span class="label">Tone</span>
+            <button
+              type="button"
+              class="select tw-px-3"
+              tabindex="-1"
+              data-el="select"
+            >
+              Professional<span class="chevron">⌄</span>
+            </button>
+            <span class="label">Brief</span>
+            <textarea
+              class="brief tw-w-full tw-p-3"
+              readonly
+              tabindex="-1"
+              data-el="brief"
+              set:text="Announce the new dashboard."
+            />
+          </div>
+        </div>
+
+        <div class="overlay" data-overlay aria-hidden="true">
+          <span class="overlay-tip" data-overlay-tip></span>
+        </div>
+      </div>
+
+      <div class="devtools">
+        <div class="dt-tabs" aria-hidden="true">
+          <span class="dt-tab">Elements</span>
+          <span class="dt-tab is-active">Styles</span>
+        </div>
+        <div class="dt-picks" role="group" aria-label="Inspect an element">
+          {
+            picks.map((pick) => (
+              <button
+                type="button"
+                class="dt-pick"
+                data-pick={pick.el}
+                aria-pressed={pick.el === select ? "true" : "false"}
+              >
+                {pick.tag}
+              </button>
+            ))
+          }
+        </div>
+        <div class="dt-rules" data-rules></div>
+      </div>
+    </div>
+  </div>
+
+  <p class="verdict" data-verdict aria-live="polite"></p>
+
+  <figcaption>
+    Click anything on the page, like you would in DevTools. Later stylesheets
+    win ties; crossed-out lines lost.
+  </figcaption>
+</figure>
+
+<script>
+  import { playSound } from "../../../lib/sound";
+
+  type Mode = "global" | "off" | "scoped";
+  type El = "title" | "link" | "list" | "select" | "brief";
+  type Rule = {
+    file: string;
+    selector: string;
+    els: El[];
+    decls: [string, string][];
+    preflight?: boolean;
+  };
+
+  const REACT_ELS: El[] = ["select", "brief"];
+
+  // Every rule in the page, in load order: legacy CSS first, then the React
+  // bundle (Preflight, then Tailwind utilities with important: true).
+  const RULES: Rule[] = [
+    {
+      file: "legacy-forms.css",
+      selector: "input",
+      els: ["title"],
+      decls: [
+        ["padding", "8px 0"],
+        ["font-size", "18px"],
+        ["font-weight", "500"],
+      ],
+    },
+    {
+      file: "legacy-base.css",
+      selector: "a",
+      els: ["link"],
+      decls: [
+        ["color", "#2563eb"],
+        ["text-decoration", "underline"],
+      ],
+    },
+    {
+      file: "legacy-base.css",
+      selector: "ul",
+      els: ["list"],
+      decls: [
+        ["list-style", "disc"],
+        ["padding", "0 0 0 24px"],
+      ],
+    },
+    {
+      file: "legacy-base.css",
+      selector: "button",
+      els: ["select"],
+      decls: [["text-transform", "uppercase"]],
+    },
+    {
+      file: "preflight.css",
+      selector: "*, ::before, ::after",
+      els: ["title", "link", "list", "select", "brief"],
+      decls: [["box-sizing", "border-box"]],
+      preflight: true,
+    },
+    {
+      file: "preflight.css",
+      selector: "button, input, textarea",
+      els: ["title", "select", "brief"],
+      decls: [
+        ["padding", "0"],
+        ["font-size", "100%"],
+        ["font-weight", "inherit"],
+      ],
+      preflight: true,
+    },
+    {
+      file: "preflight.css",
+      selector: "button",
+      els: ["select"],
+      decls: [["text-transform", "none"]],
+      preflight: true,
+    },
+    {
+      file: "preflight.css",
+      selector: "a",
+      els: ["link"],
+      decls: [
+        ["color", "inherit"],
+        ["text-decoration", "inherit"],
+      ],
+      preflight: true,
+    },
+    {
+      file: "preflight.css",
+      selector: "ol, ul",
+      els: ["list"],
+      decls: [
+        ["list-style", "none"],
+        ["padding", "0"],
+      ],
+      preflight: true,
+    },
+    {
+      file: "react.css",
+      selector: ".tw-px-3",
+      els: ["select"],
+      decls: [["padding", "8px 12px !important"]],
+    },
+    {
+      file: "react.css",
+      selector: ".tw-w-full.tw-p-3",
+      els: ["brief"],
+      decls: [
+        ["width", "100% !important"],
+        ["padding", "12px !important"],
+      ],
+    },
+  ];
+
+  const VERDICTS: Record<Mode, Record<El, string>> = {
+    global: {
+      title:
+        "Both rules are just <code>input</code>, so it’s a tie. <code>preflight.css</code> loads later and wins: no padding, 16px.",
+      link: "Preflight’s <code>a { color: inherit }</code> loads later and wins. The link goes grey.",
+      list: "Preflight’s <code>ul</code> reset loads later and wins. The bullets and the indent vanish.",
+      select:
+        "React looks fine here: Preflight resets <code>text-transform</code>. It’s the legacy page that breaks.",
+      brief:
+        "Preflight’s border-box reset keeps the textarea inside the panel.",
+    },
+    off: {
+      title:
+        "No Preflight, so the legacy rule wins. The input keeps 18px and its padding.",
+      link: "No Preflight, so the legacy link stays blue.",
+      list: "No Preflight, so the legacy list keeps its bullets.",
+      select:
+        "Nothing resets <code>button</code> anymore, so the legacy uppercase rule lands on React’s select.",
+      brief:
+        "No border-box reset: 100% width <em>plus</em> 12px padding on each side spills past the panel.",
+    },
+    scoped: {
+      title:
+        "Preflight now only matches inside <code>.react-root</code>. The legacy input keeps 18px and its padding.",
+      link: "Preflight skips anything outside <code>.react-root</code>, so the link stays blue.",
+      list: "Preflight skips anything outside <code>.react-root</code>, so the bullets stay.",
+      select:
+        "Inside <code>.react-root</code>, Preflight still applies, so <code>text-transform: none</code> beats the legacy rule.",
+      brief:
+        "Inside <code>.react-root</code>, the border-box reset applies, so the textarea fits.",
+    },
+  };
+
+  const SCOPE = ":where(.react-root, .react-root *)";
+
+  const escape = (text: string) =>
+    text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
+  // The scoped form, written the way scoped-preflight emits it.
+  const scopedSelector = (selector: string) =>
+    selector.startsWith("*")
+      ? `*${SCOPE}`
+      : selector.includes(",")
+        ? `:is(${selector})${SCOPE}`
+        : `${selector}${SCOPE}`;
+
+  const renderRules = (el: El, mode: Mode) => {
+    // Which rules match this element in this mode?
+    const outside = !REACT_ELS.includes(el);
+    const rows = RULES.map((rule, order) => {
+      if (!rule.els.includes(el)) return null;
+      if (rule.preflight && mode === "off") return null;
+      const dim = Boolean(rule.preflight && mode === "scoped" && outside);
+      return { rule, order, dim };
+    }).filter((row): row is { rule: Rule; order: number; dim: boolean } =>
+      Boolean(row),
+    );
+
+    // Resolve the cascade: !important first, then the later rule wins a tie.
+    const winners = new Map<string, { order: number; important: boolean }>();
+    for (const { rule, order, dim } of rows) {
+      if (dim) continue;
+      for (const [prop, value] of rule.decls) {
+        const important = value.includes("!important");
+        const current = winners.get(prop);
+        if (!current || important || !current.important) {
+          winners.set(prop, { order, important });
+        }
+      }
+    }
+
+    // DevTools shows the highest-priority rule first.
+    return rows
+      .slice()
+      .reverse()
+      .map(({ rule, order, dim }) => {
+        const selector =
+          rule.preflight && mode === "scoped"
+            ? scopedSelector(rule.selector)
+            : rule.selector;
+        const decls = rule.decls
+          .map(([prop, value]) => {
+            const lost = dim || winners.get(prop)?.order !== order;
+            return `<span class="decl${lost ? " is-lost" : ""}"><span class="prop">${prop}</span>: <span class="val">${escape(value)}</span>;</span>`;
+          })
+          .join("");
+        const note = dim
+          ? `<span class="rule-note">not applied: element is outside .react-root</span>`
+          : "";
+        return `<div class="rule${dim ? " is-dim" : ""}${rule.preflight ? " is-preflight" : ""}"><span class="rule-head"><span><span class="sel">${escape(selector)}</span> {</span><span class="file">${rule.file}</span></span>${decls}<span class="brace">}</span>${note}</div>`;
+      })
+      .join("");
+  };
+
+  for (const demo of document.querySelectorAll<HTMLElement>("[data-cascade]")) {
+    const preview = demo.querySelector<HTMLElement>("[data-preview]");
+    const overlay = demo.querySelector<HTMLElement>("[data-overlay]");
+    const tip = demo.querySelector<HTMLElement>("[data-overlay-tip]");
+    const rulesEl = demo.querySelector<HTMLElement>("[data-rules]");
+    const verdict = demo.querySelector<HTMLElement>("[data-verdict]");
+    if (!preview || !overlay || !tip || !rulesEl || !verdict) continue;
+
+    let mode = (demo.dataset.mode ?? "global") as Mode;
+    let selected = (demo.dataset.select ?? "title") as El;
+
+    const elementFor = (el: El) =>
+      demo.querySelector<HTMLElement>(`[data-el="${el}"]`);
+
+    // DevTools-style highlight: blue content box, green padding.
+    const highlight = () => {
+      const target = elementFor(selected);
+      if (!target) return;
+      const box = preview.getBoundingClientRect();
+      const rect = target.getBoundingClientRect();
+      const style = getComputedStyle(target);
+      const px = (value: string) => parseFloat(value) || 0;
+      const bl = px(style.borderLeftWidth);
+      const bt = px(style.borderTopWidth);
+      const br = px(style.borderRightWidth);
+      const bb = px(style.borderBottomWidth);
+      overlay.style.left = `${rect.left - box.left + bl}px`;
+      overlay.style.top = `${rect.top - box.top + bt}px`;
+      overlay.style.width = `${Math.max(rect.width - bl - br, 0)}px`;
+      overlay.style.height = `${Math.max(rect.height - bt - bb, 0)}px`;
+      overlay.style.borderWidth = [
+        style.paddingTop,
+        style.paddingRight,
+        style.paddingBottom,
+        style.paddingLeft,
+      ].join(" ");
+      overlay.classList.add("is-on");
+      const tag = target.tagName.toLowerCase();
+      const cls = target.classList[0] ? `.${target.classList[0]}` : "";
+      tip.textContent = `${tag}${cls}  ${Math.round(rect.width)} × ${Math.round(rect.height)}`;
+    };
+
+    const render = () => {
+      demo.dataset.mode = mode;
+      demo
+        .querySelectorAll<HTMLElement>("[data-mode-option]")
+        .forEach((option) =>
+          option.setAttribute(
+            "aria-pressed",
+            String(option.dataset.modeOption === mode),
+          ),
+        );
+      demo
+        .querySelectorAll<HTMLElement>("[data-pick]")
+        .forEach((pick) =>
+          pick.setAttribute(
+            "aria-pressed",
+            String(pick.dataset.pick === selected),
+          ),
+        );
+      rulesEl.innerHTML = renderRules(selected, mode);
+      verdict.innerHTML = VERDICTS[mode][selected];
+      requestAnimationFrame(highlight);
+    };
+
+    demo
+      .querySelectorAll<HTMLButtonElement>("[data-mode-option]")
+      .forEach((option) =>
+        option.addEventListener("click", () => {
+          mode = option.dataset.modeOption as Mode;
+          render();
+          playSound(mode === "scoped" ? "fix" : "break");
+        }),
+      );
+
+    const pick = (el: El) => {
+      selected = el;
+      render();
+      playSound("tick");
+    };
+
+    demo
+      .querySelectorAll<HTMLButtonElement>("[data-pick]")
+      .forEach((button) =>
+        button.addEventListener("click", () => pick(button.dataset.pick as El)),
+      );
+
+    // Clicking the page itself works like DevTools' element picker.
+    demo.querySelectorAll<HTMLElement>("[data-el]").forEach((element) => {
+      element.addEventListener("mousedown", (event) => event.preventDefault());
+      element.addEventListener("click", (event) => {
+        event.preventDefault();
+        pick(element.dataset.el as El);
+      });
+    });
+
+    window.addEventListener("resize", () => requestAnimationFrame(highlight));
+    render();
+  }
+</script>
+
+<style>
+  /* Switch (dark, outside the window) */
+  .switch {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .switch-label {
+    margin-right: 0.25rem;
+    color: var(--blog-text-muted);
+    font-size: 0.875rem;
+  }
+
+  .switch-option {
+    border: 0;
+    border-radius: 0.25rem;
+    background: rgb(255 255 255 / 0.06);
+    color: var(--blog-text-muted);
+    cursor: pointer;
+    padding: 0.25rem 0.75rem;
+    font-size: 0.8125rem;
+  }
+
+  .switch-option[aria-pressed="true"] {
+    background: rgb(248 113 113 / 0.14);
+    color: #fca5a5;
+  }
+
+  .cascade[data-mode="scoped"] .switch-option[aria-pressed="true"] {
+    background: rgb(52 178 123 / 0.16);
+    color: #6ee7b7;
+  }
+
+  .switch-option:focus-visible,
+  .dt-pick:focus-visible {
+    outline: 2px solid var(--blog-accent);
+    outline-offset: 2px;
+  }
+
+  /* Window */
+  .frame {
+    overflow: hidden;
+    border-radius: 0.75rem;
+    background: #fff;
+    box-shadow: 0 1.25rem 2.5rem -1rem rgb(0 0 0 / 0.6);
+  }
+
+  .bar {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    background: #f5f4f2;
+    padding: 0.625rem 0.875rem;
+  }
+
+  .dot {
+    width: 0.6875rem;
+    height: 0.6875rem;
+    border-radius: 50%;
+  }
+
+  .dot-red {
+    background: #ff5f57;
+  }
+
+  .dot-yellow {
+    background: #febc2e;
+  }
+
+  .dot-green {
+    background: #28c840;
+  }
+
+  .url {
+    margin-inline: auto;
+    border-radius: 0.25rem;
+    background: #fff;
+    color: #78716c;
+    padding: 0.125rem 0.75rem;
+    font-size: 0.75rem;
+    transform: translateX(-1.25rem);
+  }
+
+  .split {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+
+  /* ---------- the page ---------- */
+  .preview {
+    position: relative;
+    min-width: 0;
+  }
+
+  .page {
+    padding: 1rem 1.125rem 1.25rem;
+    color: #1c1917;
+    font-size: 16px;
+    line-height: 1.5;
+  }
+
+  .page [data-el] {
+    cursor: crosshair;
+  }
+
+  .zone {
+    display: block;
+    margin-bottom: 0.375rem;
+    font-size: 0.6875rem;
+    font-weight: 600;
+  }
+
+  .zone-jsp {
+    color: #b45309;
+  }
+
+  .zone-react {
+    color: #6d5bd0;
+  }
+
+  .label {
+    display: block;
+    color: #78716c;
+    font-size: 0.6875rem;
+    font-weight: 600;
+  }
+
+  .copy {
+    margin: 0.625rem 0 0.25rem;
+    font-size: 0.875rem;
+  }
+
+  /* legacy-forms.css + legacy-base.css: on the whole page, always */
+  .page input {
+    display: block;
+    width: 100%;
+    border: 0;
+    border-bottom: 2px solid #ecdcc3;
+    border-radius: 0;
+    background: transparent;
+    color: inherit;
+    padding: 8px 0;
+    font-family: inherit;
+    font-size: 18px;
+    font-weight: 500;
+    line-height: normal;
+  }
+
+  .page a {
+    color: #2563eb;
+    text-decoration: underline;
+  }
+
+  .page ul {
+    margin: 0;
+    padding: 0 0 0 24px;
+    font-size: 0.875rem;
+    list-style: disc;
+  }
+
+  .page li {
+    margin: 0;
+  }
+
+  .page button {
+    text-transform: uppercase;
+  }
+
+  /* The React panel and its utilities (important: true) */
+  .react-root {
+    width: 86%;
+    margin-top: 0.875rem;
+    border-radius: 0.5rem;
+    background: #f3f0ff;
+    padding: 0.625rem 0.75rem 0.75rem;
+  }
+
+  .select {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    margin-bottom: 0.5rem;
+    border: 1px solid #ddd3fd;
+    border-radius: 0.375rem;
+    background: #fff;
+    color: #1c1917;
+    padding: 8px 12px !important;
+    font: inherit;
+    font-size: 0.8125rem;
+  }
+
+  .chevron {
+    color: #a8a29e;
+  }
+
+  .brief {
+    display: block;
+    width: 100% !important;
+    height: 2.75rem;
+    border: 1px solid #ddd3fd;
+    border-radius: 0.375rem;
+    background: #fff;
+    color: #1c1917;
+    padding: 12px !important;
+    font: inherit;
+    font-size: 0.8125rem;
+    overflow: hidden;
+    resize: none;
+  }
+
+  /* Browser default without a reset: content-box */
+  .page .react-root * {
+    box-sizing: content-box;
+  }
+
+  /* Preflight: global */
+  .cascade[data-mode="global"] .page input {
+    padding: 0;
+    font-size: 100%;
+    font-weight: inherit;
+  }
+
+  .cascade[data-mode="global"] .page a {
+    color: inherit;
+    text-decoration: inherit;
+  }
+
+  .cascade[data-mode="global"] .page ul {
+    padding: 0;
+    list-style: none;
+  }
+
+  /* Preflight inside React: global or scoped */
+  .cascade[data-mode="global"] .page .react-root *,
+  .cascade[data-mode="scoped"] .page .react-root * {
+    box-sizing: border-box;
+  }
+
+  .cascade[data-mode="global"] .page .react-root button,
+  .cascade[data-mode="scoped"] .page .react-root button {
+    text-transform: none;
+  }
+
+  /* DevTools highlight */
+  .overlay {
+    position: absolute;
+    border-style: solid;
+    border-color: rgb(147 196 125 / 0.55);
+    background: rgb(111 168 220 / 0.55);
+    background-clip: padding-box;
+    opacity: 0;
+    pointer-events: none;
+    transition:
+      left 200ms ease,
+      top 200ms ease,
+      width 200ms ease,
+      height 200ms ease,
+      border-width 200ms ease;
+  }
+
+  .overlay.is-on {
+    opacity: 1;
+  }
+
+  .overlay-tip {
+    position: absolute;
+    bottom: calc(100% + 0.375rem);
+    left: -1px;
+    border-radius: 0.25rem;
+    background: #202124;
+    color: #e8eaed;
+    padding: 0.125rem 0.375rem;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 0.625rem;
+    white-space: pre;
+    font-variant-ligatures: none;
+  }
+
+  /* ---------- DevTools pane ---------- */
+  .devtools {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    background: #202124;
+    color: #e8eaed;
+  }
+
+  .dt-tabs {
+    display: flex;
+    gap: 1rem;
+    background: #292a2d;
+    padding: 0 0.875rem;
+    font-size: 0.75rem;
+  }
+
+  .dt-tab {
+    border-bottom: 2px solid transparent;
+    color: #9aa0a6;
+    padding: 0.5rem 0;
+  }
+
+  .dt-tab.is-active {
+    border-bottom-color: #8ab4f8;
+    color: #e8eaed;
+  }
+
+  .dt-picks {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+    padding: 0.625rem 0.75rem 0.25rem;
+  }
+
+  .dt-pick {
+    border: 0;
+    border-radius: 0.25rem;
+    background: transparent;
+    color: #9aa0a6;
+    cursor: pointer;
+    padding: 0.125rem 0.375rem;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 0.6875rem;
+  }
+
+  .dt-pick:hover {
+    color: #e8eaed;
+  }
+
+  .dt-pick[aria-pressed="true"] {
+    background: rgb(138 180 248 / 0.18);
+    color: #8ab4f8;
+  }
+
+  .dt-rules {
+    display: grid;
+    gap: 0.625rem;
+    padding: 0.5rem 0.875rem 1rem;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 0.71875rem;
+    line-height: 1.6;
+    font-variant-ligatures: none;
+  }
+
+  .dt-rules :global(.rule) {
+    display: flex;
+    flex-direction: column;
+    border-bottom: 1px solid rgb(255 255 255 / 0.06);
+    padding-bottom: 0.5rem;
+    animation: rule-in 220ms ease;
+  }
+
+  .dt-rules :global(.rule-head) {
+    display: flex;
+    justify-content: space-between;
+    gap: 0.5rem;
+  }
+
+  .dt-rules :global(.sel) {
+    color: #e8eaed;
+    overflow-wrap: anywhere;
+  }
+
+  .dt-rules :global(.file) {
+    flex-shrink: 0;
+    color: #9aa0a6;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+
+  .dt-rules :global(.is-preflight .file) {
+    color: #c4b5fd;
+  }
+
+  .dt-rules :global(.decl) {
+    padding-left: 1rem;
+  }
+
+  .dt-rules :global(.prop) {
+    color: #8ab4f8;
+  }
+
+  .dt-rules :global(.val) {
+    color: #f9c97a;
+  }
+
+  .dt-rules :global(.decl.is-lost) {
+    opacity: 0.55;
+    text-decoration: line-through;
+  }
+
+  .dt-rules :global(.rule.is-dim) {
+    opacity: 0.45;
+  }
+
+  .dt-rules :global(.rule-note) {
+    margin-top: 0.125rem;
+    color: #fca5a5;
+    font-family: var(--demo-font-ui);
+    font-size: 0.6875rem;
+  }
+
+  .dt-rules :global(.brace) {
+    color: #e8eaed;
+  }
+
+  .verdict {
+    min-height: 1.5em;
+    margin: 0.75rem 0 0;
+    color: var(--blog-text);
+    font-size: 0.9375rem;
+  }
+
+  .verdict :global(code) {
+    font-size: 0.8125rem;
+  }
+
+  @keyframes rule-in {
+    from {
+      opacity: 0;
+      transform: translateY(-0.25rem);
+    }
+  }
+
+  @media (max-width: 44rem) {
+    .split {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .overlay {
+      transition: none;
+    }
+
+    .dt-rules :global(.rule) {
+      animation: none;
+    }
+  }
+</style>

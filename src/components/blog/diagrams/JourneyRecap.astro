@@ -1,0 +1,178 @@
+---
+/**
+ * The React-in-JSP journey as a timeline: each problem led to the next fix.
+ * Steps reveal one by one as the timeline scrolls into view; without JS (or
+ * with reduced motion) everything is simply visible.
+ */
+const steps = [
+  {
+    problem: "React wants to own the whole page",
+    fix: "Whole pages: React’s index.html, included by a JSP or served as is.",
+  },
+  {
+    problem: "One feature has to sit between two JSP components",
+    fix: "An empty div in the JSP, and mountReact renders into it.",
+  },
+  {
+    problem: "Every change needs a full build",
+    fix: "vite-dev.jsp gives hot reload on real JSP pages.",
+  },
+  {
+    problem: "Tailwind and the legacy CSS fight",
+    fix: "Scoped CSS keeps them out of each other’s way.",
+  },
+  {
+    problem: "JSP and React can’t call each other",
+    fix: "Custom events on window let them talk without knowing about each other.",
+  },
+];
+---
+
+<ol class="journey" data-journey>
+  {
+    steps.map((step, index) => (
+      <li class="journey-step" style={`--i: ${index}`}>
+        <span class="journey-node" aria-hidden="true">
+          {index + 1}
+        </span>
+        <div class="journey-card">
+          <span class="journey-problem">
+            <span class="journey-label">Problem</span>
+            <span>{step.problem}</span>
+          </span>
+          <span class="journey-fix">
+            <span class="journey-label journey-label-fix">Fix</span>
+            <span>{step.fix}</span>
+          </span>
+        </div>
+      </li>
+    ))
+  }
+</ol>
+
+<script>
+  for (const journey of document.querySelectorAll<HTMLElement>(
+    "[data-journey]",
+  )) {
+    if (matchMedia("(prefers-reduced-motion: reduce)").matches) continue;
+    journey.classList.add("will-reveal");
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (!entries.some((entry) => entry.isIntersecting)) return;
+        journey.classList.add("is-revealed");
+        observer.disconnect();
+      },
+      { threshold: 0.25 },
+    );
+    observer.observe(journey);
+  }
+</script>
+
+<style>
+  .journey {
+    position: relative;
+    display: grid;
+    gap: 0.875rem;
+    margin: 1.75rem 0 2rem;
+    padding: 0;
+    list-style: none;
+  }
+
+  /* The connecting line behind the numbered nodes */
+  .journey::before {
+    content: "";
+    position: absolute;
+    top: 1.25rem;
+    bottom: 1.25rem;
+    left: 1.0625rem;
+    width: 2px;
+    background: linear-gradient(#f5a524, #8b7cf0);
+  }
+
+  .journey-step {
+    position: relative;
+    display: grid;
+    grid-template-columns: 2.25rem minmax(0, 1fr);
+    gap: 1rem;
+    margin: 0;
+  }
+
+  .journey-node {
+    z-index: 1;
+    display: grid;
+    width: 2.25rem;
+    height: 2.25rem;
+    place-items: center;
+    border: 2px solid var(--blog-bg);
+    border-radius: 50%;
+    background: var(--blog-accent);
+    color: hsl(var(--primary-foreground));
+    font-family: var(--demo-font-ui);
+    font-size: 0.9375rem;
+    font-weight: 700;
+  }
+
+  .journey-step:last-child .journey-node {
+    background: #8b7cf0;
+  }
+
+  .journey-card {
+    display: grid;
+    gap: 0.375rem;
+    border-radius: 0.25rem;
+    background: var(--blog-surface);
+    padding: 0.875rem 1.125rem;
+  }
+
+  .journey-problem {
+    display: grid;
+    grid-template-columns: 4.75rem minmax(0, 1fr);
+    align-items: baseline;
+    color: var(--blog-text-muted);
+    font-size: 0.9375rem;
+    line-height: 1.5;
+  }
+
+  .journey-fix {
+    display: grid;
+    grid-template-columns: 4.75rem minmax(0, 1fr);
+    align-items: baseline;
+    color: var(--blog-text);
+    font-size: 1rem;
+    font-weight: 600;
+    line-height: 1.5;
+  }
+
+  .journey-label {
+    color: #f0b25a;
+    font-family: var(--demo-font-ui);
+    font-size: 0.8125rem;
+    font-weight: 600;
+  }
+
+  .journey-label-fix {
+    color: #bca8fa;
+  }
+
+  /* Scroll reveal (only when JS opted in) */
+  .journey.will-reveal .journey-step {
+    opacity: 0;
+    transform: translateY(0.75rem);
+    transition:
+      opacity 450ms ease,
+      transform 450ms ease;
+    transition-delay: calc(var(--i) * 140ms);
+  }
+
+  .journey.will-reveal.is-revealed .journey-step {
+    opacity: 1;
+    transform: none;
+  }
+
+  @media (max-width: 30rem) {
+    .journey-problem,
+    .journey-fix {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+</style>

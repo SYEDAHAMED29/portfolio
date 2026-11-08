@@ -10,13 +10,12 @@ const posts = (
 ).sort(
   (a, b) => b.data.publishedDate.getTime() - a.data.publishedDate.getTime(),
 );
-const featuredPost = posts.find(({ data }) => data.featured);
-// "All writing" is hidden until there's more than one published post.
-// Flip to true to show the archive list again.
-const SHOW_ARCHIVE = false;
-const archivePosts = SHOW_ARCHIVE
-  ? posts.filter((post) => post.id !== featuredPost?.id)
-  : [];
+const featuredPost = posts.find(({ data }) => data.featured && !data.draft);
+// Every other published post. Drafts stay off the index (even in dev) but
+// remain reachable by URL while you write them.
+const archivePosts = posts.filter(
+  (post) => post.id !== featuredPost?.id && !post.data.draft,
+);
 const readingTime = (body?: string) => {
   if (!body) return undefined;
   const words = body.trim().split(/\s+/).filter(Boolean).length;

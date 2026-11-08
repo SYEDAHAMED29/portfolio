@@ -1,7 +1,7 @@
 ---
 /**
  * Inline emoji for blog posts. Announced properly by screen readers, wiggles
- * on hover, and goes "boop" when clicked (if sound is on).
+ * on hover, and plays its own little sound when clicked (if sound is on).
  *
  * Custom (site-drawn) emoji:  <Emoji name="party" label="party popper" />
  * Native emoji fallback:      <Emoji label="party popper">🎉</Emoji>
@@ -22,6 +22,7 @@ const icon = name ? emojiIcons[name] : undefined;
   role="img"
   aria-label={label}
   data-emoji
+  data-emoji-name={name}
   >{
     icon ? (
       <svg
@@ -37,11 +38,11 @@ const icon = name ? emojiIcons[name] : undefined;
 >
 
 <script>
-  import { playSound } from "../../../lib/sound";
+  import { playEmojiSound } from "../../../lib/sound";
 
   for (const emoji of document.querySelectorAll<HTMLElement>("[data-emoji]")) {
     emoji.addEventListener("click", () => {
-      playSound("boop");
+      playEmojiSound(emoji.dataset.emojiName);
       emoji.classList.remove("is-bouncing");
       // Force a reflow so the animation restarts on every click.
       void emoji.offsetWidth;
