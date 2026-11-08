@@ -1,0 +1,90 @@
+---
+import { ArrowRight, ArrowUpRight, FileText } from "@lucide/astro";
+import { getHomePosts, readingTime } from "../../lib/blog";
+
+const posts = await getHomePosts();
+
+const formatDate = new Intl.DateTimeFormat("en", {
+  month: "short",
+  day: "2-digit",
+  year: "numeric",
+});
+const tagSlug = (tag: string) => tag.toLowerCase().replace(/\s+/g, "-");
+---
+
+{
+  posts.length > 0 && (
+    <section
+      id="blogs"
+      aria-labelledby="blogs-heading"
+      class="scroll-mt-4 px-6 py-16 md:py-24"
+    >
+      <div class="container-narrow">
+        <header class="section-head reveal">
+          <h2 id="blogs-heading">Blogs</h2>
+          <a
+            href="/blog"
+            class="group inline-flex items-center gap-1.5 font-mono text-sm text-muted-foreground transition-colors hover:text-primary"
+          >
+            ~/blogs · All posts
+            <ArrowRight
+              size={14}
+              stroke-width={2}
+              aria-hidden="true"
+              class="transition-transform group-hover:translate-x-0.5"
+            />
+          </a>
+        </header>
+
+        <ul
+          class:list={[
+            "reveal grid gap-4 md:grid-cols-2",
+            { "lg:grid-cols-3": posts.length >= 3 },
+          ]}
+        >
+          {posts.map((post) => (
+            <li class="group relative flex flex-col overflow-hidden rounded-lg border border-code-border bg-code-bg transition duration-200 hover:-translate-y-0.5 hover:border-primary/50 hover:shadow-[0_0_24px_-8px_hsl(var(--primary)/0.35)]">
+              <div class="flex items-center justify-between gap-3 border-b border-code-border bg-card/60 px-4 py-2.5 font-mono text-xs">
+                <span class="flex min-w-0 items-center gap-2 text-code-property">
+                  <FileText size={13} aria-hidden="true" class="shrink-0" />
+                  <span class="truncate">{post.id}.mdx</span>
+                </span>
+                <ArrowUpRight
+                  size={15}
+                  stroke-width={2}
+                  aria-hidden="true"
+                  class="shrink-0 text-muted-foreground transition group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-primary"
+                />
+              </div>
+              <div class="flex flex-1 flex-col p-5">
+                <p class="font-mono text-xs text-muted-foreground">
+                  <time datetime={post.data.publishedDate.toISOString()}>
+                    {formatDate.format(post.data.publishedDate)}
+                  </time>
+                  {" · "}
+                  {readingTime(post.body)}
+                </p>
+                <h3 class="mt-3 font-display text-xl leading-snug font-semibold text-foreground transition-colors group-hover:text-primary">
+                  <a
+                    href={`/blog/${post.id}`}
+                    class="after:absolute after:inset-0 after:content-['']"
+                  >
+                    {post.data.title}
+                  </a>
+                </h3>
+                <p class="mt-2 line-clamp-3 text-[0.9375rem] leading-relaxed text-muted-foreground">
+                  {post.data.description}
+                </p>
+                <p class="mt-auto flex flex-wrap gap-x-3 gap-y-1 pt-5 font-mono text-xs text-code-keyword/80">
+                  {post.data.tags.map((tag) => (
+                    <span>#{tagSlug(tag)}</span>
+                  ))}
+                </p>
+              </div>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </section>
+  )
+}

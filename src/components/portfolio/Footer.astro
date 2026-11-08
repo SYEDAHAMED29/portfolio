@@ -4,17 +4,44 @@ import { siteData } from "../../data/site";
 // The design credit only applies to the blog pages.
 const { pathname } = Astro.url;
 const isBlog = pathname === "/blog" || pathname.startsWith("/blog/");
+
+// Build stamp: the commit and date this page was built from.
+const commit = __BUILD_COMMIT__;
+const builtOn = new Intl.DateTimeFormat("en", {
+  day: "2-digit",
+  month: "short",
+  year: "numeric",
+}).format(new Date());
 ---
 
 <footer class="border-t border-border px-6 py-8">
   <div
-    class="container-narrow flex flex-col items-center justify-between gap-4 sm:flex-row"
+    class="container-narrow flex flex-col items-center justify-between gap-4 text-center sm:flex-row sm:text-left"
   >
     <p class="text-xs text-muted-foreground">
-      © {new Date().getFullYear()}
-      {siteData.name}
-    </p><p class="font-mono text-xs text-muted-foreground">
-      Built with Astro{
+      © {new Date().getFullYear()}{" "}{siteData.name}
+    </p>
+    <p class="font-mono text-xs text-muted-foreground">
+      Built with Astro
+      {
+        commit && (
+          <>
+            {" · "}
+            <a
+              href={`https://github.com/SYEDAHAMED29/portfolio/commit/${commit}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              class="transition-colors hover:text-foreground"
+              title="Commit this build came from"
+            >
+              {commit}
+            </a>
+          </>
+        )
+      }
+      {" · "}
+      {builtOn}
+      {
         isBlog && (
           <>
             {" · "}Blog design inspired by{" "}

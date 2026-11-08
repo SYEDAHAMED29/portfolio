@@ -1,16 +1,29 @@
 ---
 import { siteData } from "../../data/site";
 
-const images = [
-  { src: "/syed.jpg", alt: "Syed Aashiq Ahamed", width: 2164, height: 2321 },
+// Highlight the name inside the intro line.
+const NAME = "Syed";
+const [leadBefore, ...leadRest] = siteData.about.lead.split(NAME);
+const leadAfter = leadRest.join(NAME);
+
+const [mainPhoto, ...otherPhotos] = [
+  {
+    src: "/syed.jpg",
+    file: "syed.jpg",
+    alt: "Syed Aashiq Ahamed",
+    width: 2164,
+    height: 2321,
+  },
   {
     src: "/syed-thrissur.jpeg",
+    file: "thrissur.jpeg",
     alt: "Syed at Thrissur beach",
     width: 960,
     height: 1280,
   },
   {
     src: "/syed-varkala.jpeg",
+    file: "varkala.jpeg",
     alt: "Syed at Varkala",
     width: 960,
     height: 1280,
@@ -18,87 +31,87 @@ const images = [
 ];
 ---
 
-<section id="about" class="section-padding bg-card/50">
-  <div class="container-narrow">
-    <div
-      class="reveal flex flex-col-reverse items-start gap-10 md:flex-row md:items-center md:justify-between md:gap-20"
-    >
-      <div class="min-w-0">
-        <h2
-          class="mb-6 font-display text-3xl font-bold text-foreground lg:text-4xl"
-        >
-          About
-        </h2><div class="max-w-2xl space-y-4">
-          {
-            siteData.about.map((paragraph) => (
-              <p class="text-base leading-relaxed text-muted-foreground lg:text-lg">
-                {paragraph}
+<div class="grid lg:grid-cols-[minmax(0,1fr)_17rem]">
+  <div class="ide-code px-3 py-5 sm:px-5">
+    <div class="ide-line">
+      <h2 class="font-bold text-foreground">
+        <span class="text-code-keyword" aria-hidden="true"># </span>About
+      </h2>
+    </div>
+    <div class="ide-line"><span></span></div>
+    <div class="ide-line">
+      <p class="ide-lead">
+        {leadBefore}
+        {leadRest.length > 0 && <span class="text-primary">{NAME}</span>}
+        {leadAfter}
+      </p>
+    </div>
+    <div class="ide-line"><span></span></div>
+    {
+      siteData.about.body.map((paragraph, index) => (
+        <>
+          <div class="ide-line">
+            {index === siteData.about.body.length - 1 ? (
+              <p class="text-pill-foreground">
+                <span class="text-code-string" aria-hidden="true">
+                  {"> "}
+                </span>
+                <em>{paragraph}</em>
               </p>
-            ))
-          }
-        </div>
-      </div>
-      <div class="flex w-full justify-center md:w-auto md:justify-end">
-        <div
-          class="relative w-56 overflow-hidden rounded-2xl border border-border/60 bg-muted shadow-lg ring-1 ring-foreground/5 sm:w-64 md:w-[320px] lg:w-[400px]"
-        >
-          <div class="aspect-square">
-            <div data-about-carousel class="relative h-full w-full">
-              {
-                images.map((image, index) => (
-                  <img
-                    src={image.src}
-                    alt={image.alt}
-                    width={image.width}
-                    height={image.height}
-                    loading={index === 0 ? "eager" : "lazy"}
-                    decoding="async"
-                    class:list={[
-                      "absolute inset-0 h-full w-full object-cover object-[50%_25%] transition-all duration-700",
-                      index === 0
-                        ? "opacity-100"
-                        : "pointer-events-none scale-[1.03] opacity-0 blur-sm",
-                    ]}
-                    data-about-image
-                  />
-                ))
-              }
-            </div><div
-              class="pointer-events-none absolute inset-0 bg-gradient-to-tr from-black/10 via-transparent to-transparent"
-            >
-            </div>
+            ) : (
+              <p class="text-pill-foreground">{paragraph}</p>
+            )}
           </div>
-        </div>
-      </div>
+          <div class="ide-line">
+            <span />
+          </div>
+        </>
+      ))
+    }
+    <div class="ide-line">
+      <span class="text-code-comment" aria-hidden="true"
+        >![me](./{mainPhoto.file})<span class="ide-cursor"></span></span
+      >
     </div>
   </div>
-</section>
 
-<script>
-  const images = Array.from(
-    document.querySelectorAll<HTMLImageElement>("[data-about-image]"),
-  );
-  if (
-    images.length > 1 &&
-    !window.matchMedia("(prefers-reduced-motion: reduce)").matches
-  ) {
-    let active = 0;
-    window.setInterval(() => {
-      images[active]?.classList.add(
-        "pointer-events-none",
-        "scale-[1.03]",
-        "opacity-0",
-        "blur-sm",
-      );
-      images[active]?.classList.remove("opacity-100");
-      active = (active + 1) % images.length;
-      images[active]?.classList.remove(
-        "pointer-events-none",
-        "scale-[1.03]",
-        "opacity-0",
-        "blur-sm",
-      );
-      images[active]?.classList.add("opacity-100");
-    }, 3000);
-  }
-</script>
+  <aside
+    class="border-t border-code-border p-4 lg:border-t-0 lg:border-l"
+    aria-label="Photos"
+  >
+    <p class="mb-3 font-mono text-xs text-muted-foreground">
+      <span class="text-code-property">preview</span> · {mainPhoto.file}
+    </p>
+    <div class="grid grid-cols-3 gap-2 lg:grid-cols-2">
+      <figure class="col-span-1 lg:col-span-2">
+        <img
+          src={mainPhoto.src}
+          alt={mainPhoto.alt}
+          width={mainPhoto.width}
+          height={mainPhoto.height}
+          loading="lazy"
+          decoding="async"
+          class="aspect-[4/5] w-full rounded border border-code-border object-cover object-[50%_25%] lg:aspect-square"
+        />
+      </figure>
+      {
+        otherPhotos.map((photo) => (
+          <figure>
+            <img
+              src={photo.src}
+              alt={photo.alt}
+              width={photo.width}
+              height={photo.height}
+              loading="lazy"
+              decoding="async"
+              class="aspect-[4/5] w-full rounded border border-code-border object-cover"
+            />
+            <figcaption class="mt-1 truncate font-mono text-[0.6875rem] text-muted-foreground">
+              {photo.file}
+            </figcaption>
+          </figure>
+        ))
+      }
+    </div>
+  </aside>
+</div>

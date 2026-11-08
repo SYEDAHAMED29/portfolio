@@ -1,54 +1,102 @@
 ---
-import { FileDown, Mail } from "@lucide/astro";
+import { ArrowUpRight, Check, Copy, FileDown } from "@lucide/astro";
 import { siteData } from "../../data/site";
-import BrandIcon from "./BrandIcon.astro";
 ---
 
-<section id="contact" class="section-padding">
-  <div class="container-narrow">
-    <div class="reveal max-w-xl">
-      <h2
-        class="mb-4 font-display text-3xl font-bold text-foreground lg:text-4xl"
+<section
+  id="contact"
+  aria-labelledby="contact-heading"
+  class="scroll-mt-4 px-6 py-16 md:py-24"
+>
+  <div class="container-narrow reveal">
+    <header class="section-head">
+      <h2 id="contact-heading">Get in Touch</h2>
+      <span class="section-head-path" aria-hidden="true">~/contact</span>
+    </header>
+
+    <div class="flex flex-wrap items-center gap-3">
+      <a
+        href={`mailto:${siteData.email}`}
+        data-analytics-event="email_clicked"
+        data-analytics-location="contact"
+        class="font-mono text-lg text-foreground underline decoration-border underline-offset-8 transition-colors hover:text-primary hover:decoration-primary sm:text-2xl"
+        >{siteData.email}</a
       >
-        Get in Touch
-      </h2><p class="mb-8 text-base text-muted-foreground lg:text-lg">
-        {siteData.contact.closingLine}
-      </p><div class="flex flex-wrap gap-3">
+      <button
+        type="button"
+        class="contact-copy"
+        data-copy={siteData.email}
+        aria-label="Copy email address"
+      >
+        <Copy size={16} aria-hidden="true" data-copy-icon />
+        <Check size={16} aria-hidden="true" class="hidden" data-copied-icon />
+        <span class="sr-only" aria-live="polite" data-copy-status></span>
+      </button>
+    </div>
+
+    <ul class="mt-10 flex flex-wrap gap-x-8 gap-y-3 text-base">
+      <li>
         <a
-          href={`mailto:${siteData.email}`}
-          data-analytics-event="email_clicked"
-          data-analytics-location="contact"
-          class="button-primary px-4 py-2.5 text-base"
-          ><Mail size={16} stroke-width={2} aria-hidden="true" /><span
-            >Email me</span
-          ></a
-        ><a
-          href={siteData.linkedin}
-          target="_blank"
-          rel="noopener noreferrer"
-          data-analytics-event="linkedin_clicked"
-          data-analytics-location="contact"
-          class="button-secondary px-4 py-2.5 text-base"
-          ><BrandIcon name="linkedin" size={16} /><span>LinkedIn</span></a
-        ><a
           href={siteData.github}
           target="_blank"
           rel="noopener noreferrer"
           data-analytics-event="github_clicked"
           data-analytics-location="contact"
-          class="button-secondary px-4 py-2.5 text-base"
-          ><BrandIcon name="github" size={16} /><span>GitHub</span></a
-        ><a
+          class="hero-link"
+          >GitHub<ArrowUpRight size={14} aria-hidden="true" /></a
+        >
+      </li>
+      <li>
+        <a
+          href={siteData.linkedin}
+          target="_blank"
+          rel="noopener noreferrer"
+          data-analytics-event="linkedin_clicked"
+          data-analytics-location="contact"
+          class="hero-link"
+          >LinkedIn<ArrowUpRight size={14} aria-hidden="true" /></a
+        >
+      </li>
+      <li>
+        <a
           href={siteData.resumePath}
           target="_blank"
           rel="noopener noreferrer"
           data-analytics-event="resume_clicked"
           data-analytics-location="contact"
-          class="button-secondary px-4 py-2.5 text-base"
-          ><FileDown size={16} stroke-width={2} aria-hidden="true" /><span
-            >Resume</span
-          ></a>
-      </div>
-    </div>
+          class="hero-link">Resume<FileDown size={14} aria-hidden="true" /></a
+        >
+      </li>
+    </ul>
   </div>
 </section>
+
+<script>
+  const button = document.querySelector<HTMLButtonElement>("[data-copy]");
+  if (button && navigator.clipboard) {
+    const copyIcon = button.querySelector("[data-copy-icon]");
+    const copiedIcon = button.querySelector("[data-copied-icon]");
+    const status = button.querySelector("[data-copy-status]");
+    let timer = 0;
+    button.addEventListener("click", async () => {
+      try {
+        await navigator.clipboard.writeText(button.dataset.copy ?? "");
+      } catch {
+        return;
+      }
+      copyIcon?.classList.add("hidden");
+      copiedIcon?.classList.remove("hidden");
+      button.dataset.copied = "";
+      if (status) status.textContent = "Email copied";
+      window.clearTimeout(timer);
+      timer = window.setTimeout(() => {
+        copyIcon?.classList.remove("hidden");
+        copiedIcon?.classList.add("hidden");
+        delete button.dataset.copied;
+        if (status) status.textContent = "";
+      }, 1800);
+    });
+  } else {
+    button?.remove();
+  }
+</script>

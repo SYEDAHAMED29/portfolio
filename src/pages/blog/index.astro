@@ -1,26 +1,17 @@
 ---
-import { getCollection } from "astro:content";
 import BlogCard from "../../components/blog/BlogCard.astro";
 import Navbar from "../../components/portfolio/Navbar.astro";
 import Footer from "../../components/portfolio/Footer.astro";
 import BaseLayout from "../../layouts/BaseLayout.astro";
+import { getSortedPosts, readingTime } from "../../lib/blog";
 
-const posts = (
-  await getCollection("blog", ({ data }) => import.meta.env.DEV || !data.draft)
-).sort(
-  (a, b) => b.data.publishedDate.getTime() - a.data.publishedDate.getTime(),
-);
+const posts = await getSortedPosts();
 const featuredPost = posts.find(({ data }) => data.featured && !data.draft);
 // Every other published post. Drafts stay off the index (even in dev) but
 // remain reachable by URL while you write them.
 const archivePosts = posts.filter(
   (post) => post.id !== featuredPost?.id && !post.data.draft,
 );
-const readingTime = (body?: string) => {
-  if (!body) return undefined;
-  const words = body.trim().split(/\s+/).filter(Boolean).length;
-  return `${Math.max(1, Math.ceil(words / 200))} min read`;
-};
 ---
 
 <BaseLayout

@@ -1,71 +1,228 @@
 ---
-import { Circle } from "@lucide/astro";
+import { ArrowRight, ArrowUpRight } from "@lucide/astro";
 import { siteData } from "../../data/site";
-import CodeCard from "./CodeCard.astro";
+
+const { greetings, exploring, timeZone } = siteData.hero;
+const [firstGreeting] = greetings;
+
+// Background keyword field: everything from the toolkit, repeated until it
+// comfortably fills a large screen. Purely decorative.
+const keywords = [
+  ...new Set([
+    ...siteData.hero.badges,
+    ...exploring,
+    ...siteData.skills.categories.flatMap((category) => category.items),
+  ]),
+];
+const unbreakable = keywords.map((keyword) => keyword.replace(/ /g, " "));
+const field = Array.from({ length: 40 }, (_, i) =>
+  [...unbreakable.slice(i % unbreakable.length), ...unbreakable].join("   "),
+).join("   ");
+
+// Server-rendered fallback; the script below keeps it live.
+const formatTime = new Intl.DateTimeFormat("en-GB", {
+  hour: "2-digit",
+  minute: "2-digit",
+  timeZone,
+});
 ---
 
 <section
   id="hero"
-  class="section-padding flex min-h-screen items-center pt-28 md:pt-20"
+  class="relative flex min-h-[88svh] flex-col overflow-hidden px-6 pt-32 pb-12"
+  data-hero
 >
-  <div class="container-narrow">
-    <div class="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
-      <div class="animate-fade-in-up">
-        <div
-          class="mb-6 inline-flex items-center gap-2 rounded-full border border-pill-border bg-secondary px-3 py-1.5 font-mono text-sm text-code-string"
+  <div class="hero-field" aria-hidden="true" data-hero-field>
+    <p>{field}</p>
+    <p class="hero-field-glow">{field}</p>
+  </div>
+
+  <div
+    class="container-narrow relative flex flex-1 flex-col justify-between gap-16"
+  >
+    <div class="my-auto animate-fade-in-up">
+      <p
+        class="flex items-center gap-3 font-mono text-sm text-muted-foreground"
+      >
+        <span class="h-px w-8 bg-primary" aria-hidden="true"></span>
+        Software engineer · {siteData.location}
+      </p>
+
+      <h1
+        class="mt-6 font-display text-6xl leading-[1.02] font-bold tracking-tighter text-foreground sm:text-7xl lg:text-[6.5rem]"
+      >
+        <span class="sr-only">Hello, I’m Syed.</span>
+        <span aria-hidden="true" class="block">
+          <span
+            class="hero-greeting"
+            lang={firstGreeting.lang}
+            data-greetings={JSON.stringify(greetings)}
+            >{firstGreeting.text}</span
+          >,
+        </span>
+        <span aria-hidden="true" class="block"
+          >I’m <span class="text-primary">Syed.</span></span
         >
-          <Circle
-            size={6}
-            stroke-width={2}
-            class="fill-current"
+      </h1>
+
+      <p class="mt-8 max-w-xl text-lg text-muted-foreground sm:text-xl">
+        SDE-1 at <a
+          href={siteData.companies.userflow}
+          target="_blank"
+          rel="noopener noreferrer"
+          data-analytics-event="Userflow_Company_Clicked"
+          class="text-foreground underline decoration-border underline-offset-4 transition-colors hover:decoration-primary"
+          >Userflow</a
+        >. Before that, two years at <a
+          href={siteData.companies.beamer}
+          target="_blank"
+          rel="noopener noreferrer"
+          data-analytics-event="Beamer_Company_Clicked"
+          class="text-foreground underline decoration-border underline-offset-4 transition-colors hover:decoration-primary"
+          >Beamer</a
+        >.
+      </p>
+
+      <div class="mt-10 flex flex-wrap items-center gap-x-8 gap-y-5">
+        <a
+          href="#blogs"
+          class="button-primary group px-5 py-2.5 text-base font-medium"
+        >
+          Read my blogs
+          <ArrowRight
+            size={16}
             aria-hidden="true"
-          />{siteData.status}
-        </div>
-        <h1
-          class="mb-4 font-display text-4xl font-bold leading-tight tracking-tight text-foreground sm:text-5xl sm:leading-none lg:text-[60px]"
-        >
-          {siteData.hero.headline}
-        </h1>
-        <div
-          class="mb-6 max-w-lg text-lg leading-relaxed text-muted-foreground"
-        >
-          <p class="mb-2 text-base sm:text-lg">
-            SDE-1 building product at <a
-              href={siteData.companies.userflow}
+            class="transition-transform group-hover:translate-x-0.5"
+          />
+        </a>
+        <ul class="flex flex-wrap items-center gap-x-6 gap-y-2 text-base">
+          <li>
+            <a
+              href={`mailto:${siteData.email}`}
+              data-analytics-event="email_clicked"
+              data-analytics-location="hero"
+              class="hero-link">Email</a
+            >
+          </li>
+          <li>
+            <a
+              href={siteData.github}
               target="_blank"
               rel="noopener noreferrer"
-              data-analytics-event="Userflow_Company_Clicked"
-              class="text-foreground underline decoration-border underline-offset-4 hover:decoration-foreground"
-              >Userflow</a
-            >, following two years at <a
-              href={siteData.companies.beamer}
+              data-analytics-event="github_clicked"
+              data-analytics-location="hero"
+              class="hero-link"
+              >GitHub<ArrowUpRight size={14} aria-hidden="true" /></a
+            >
+          </li>
+          <li>
+            <a
+              href={siteData.linkedin}
               target="_blank"
               rel="noopener noreferrer"
-              data-analytics-event="Beamer_Company_Clicked"
-              class="text-foreground underline decoration-border underline-offset-4 hover:decoration-foreground"
-              >Beamer</a
-            >.
-          </p>
-          <p>{siteData.hero.subtext}</p>
-        </div>
-        <div class="mb-8 flex flex-wrap gap-2">
-          {
-            siteData.hero.badges.map((badge) => (
-              <span class="pill px-2.5 py-1 text-sm">{badge}</span>
-            ))
-          }
-        </div>
-        <div class="flex flex-wrap gap-3">
-          <a href="#experience" class="button-primary px-5 py-2.5 text-base"
-            >View Experience</a
-          ><a
-            href={`mailto:${siteData.email}`}
-            data-analytics-event="email_clicked"
-            data-analytics-location="hero"
-            class="button-secondary px-5 py-2.5 text-base">Email me</a>
-        </div>
+              data-analytics-event="linkedin_clicked"
+              data-analytics-location="hero"
+              class="hero-link"
+              >LinkedIn<ArrowUpRight size={14} aria-hidden="true" /></a
+            >
+          </li>
+        </ul>
       </div>
-      <div class="hidden animate-fade-in-right lg:block"><CodeCard /></div>
     </div>
+
+    <dl
+      class="hero-meta grid animate-fade-in-up gap-5 border-t border-border pt-6 sm:grid-cols-3"
+    >
+      <div>
+        <dt>
+          <span
+            class="inline-block h-1.5 w-1.5 animate-pulse rounded-full bg-code-string"
+            aria-hidden="true"></span>
+          Now
+        </dt>
+        <dd>{siteData.status}</dd>
+      </div>
+      <div>
+        <dt>Exploring</dt>
+        <dd>{exploring.join(" · ")}</dd>
+      </div>
+      <div>
+        <dt>Local time</dt>
+        <dd>
+          <time
+            data-local-time
+            data-time-zone={timeZone}
+            class="font-mono tabular-nums">{formatTime.format(new Date())}</time
+          >
+          <span class="text-muted-foreground"> IST</span>
+        </dd>
+      </div>
+    </dl>
   </div>
 </section>
+
+<script>
+  const reduceMotion = window.matchMedia(
+    "(prefers-reduced-motion: reduce)",
+  ).matches;
+
+  // Cycle the greeting through languages.
+  const greeting = document.querySelector<HTMLElement>("[data-greetings]");
+  if (greeting && !reduceMotion) {
+    const list = JSON.parse(greeting.dataset.greetings ?? "[]") as {
+      text: string;
+      lang: string;
+    }[];
+    let index = 0;
+    window.setInterval(() => {
+      greeting.classList.add("is-leaving");
+      window.setTimeout(() => {
+        index = (index + 1) % list.length;
+        greeting.textContent = list[index].text;
+        greeting.lang = list[index].lang;
+        greeting.classList.remove("is-leaving");
+      }, 280);
+    }, 2200);
+  }
+
+  // Spotlight: reveal the keyword field around the pointer.
+  const hero = document.querySelector<HTMLElement>("[data-hero]");
+  const heroField = document.querySelector<HTMLElement>("[data-hero-field]");
+  if (hero && heroField) {
+    let frame = 0;
+    hero.addEventListener("pointermove", (event) => {
+      if (event.pointerType !== "mouse") return;
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(() => {
+        const rect = heroField.getBoundingClientRect();
+        heroField.style.setProperty(
+          "--spot-x",
+          `${event.clientX - rect.left}px`,
+        );
+        heroField.style.setProperty(
+          "--spot-y",
+          `${event.clientY - rect.top}px`,
+        );
+      });
+    });
+    hero.addEventListener("pointerleave", () => {
+      heroField.style.removeProperty("--spot-x");
+      heroField.style.removeProperty("--spot-y");
+    });
+  }
+
+  // Live local time.
+  const clock = document.querySelector<HTMLElement>("[data-local-time]");
+  if (clock) {
+    const format = new Intl.DateTimeFormat("en-GB", {
+      hour: "2-digit",
+      minute: "2-digit",
+      timeZone: clock.dataset.timeZone,
+    });
+    const tick = () => {
+      clock.textContent = format.format(new Date());
+    };
+    tick();
+    window.setInterval(tick, 30_000);
+  }
+</script>

@@ -1,0 +1,311 @@
+---
+import {
+  Braces,
+  ChevronDown,
+  FileCode,
+  FileText,
+  FolderOpen,
+  GitBranch,
+} from "@lucide/astro";
+import { getHomePosts } from "../../lib/blog";
+import About from "./About.astro";
+import CodeCard from "./CodeCard.astro";
+import Skills from "./Skills.astro";
+
+// The explorer lists the same posts as the Blogs section below.
+const posts = await getHomePosts();
+
+// Panel ids double as the page anchors (#about, #skills) used by the navbar.
+const files = [
+  { id: "about", name: "about.md", lang: "Markdown" },
+  { id: "skills", name: "skills.json", lang: "JSON" },
+  { id: "syed", name: "syed.ts", lang: "TypeScript" },
+] as const;
+const initial = files[0].id as (typeof files)[number]["id"];
+---
+
+<section
+  class="scroll-mt-4 px-6 py-12 md:py-16"
+  aria-label="About, skills and syed.ts"
+  data-ide
+>
+  <div class="container-narrow">
+    <div
+      class="reveal glow-sm overflow-hidden rounded-lg border border-code-border bg-code-bg"
+    >
+      <!-- Title bar -->
+      <div
+        class="relative flex items-center gap-2 border-b border-code-border px-4 py-2.5"
+      >
+        <span class="h-3 w-3 rounded-full bg-destructive/60"></span><span
+          class="h-3 w-3 rounded-full bg-primary/40"></span><span
+          class="h-3 w-3 rounded-full bg-code-string/40"></span>
+        <span
+          class="absolute left-1/2 -translate-x-1/2 font-mono text-xs text-muted-foreground"
+          >syed — ~/portfolio</span
+        >
+      </div>
+
+      <div class="grid lg:grid-cols-[14rem_minmax(0,1fr)]">
+        <!-- Explorer -->
+        <nav
+          class="hidden border-r border-code-border bg-card/60 py-3 font-mono text-[0.8125rem] lg:block"
+          aria-label="Files"
+        >
+          <p
+            class="px-4 pb-2 text-[0.6875rem] tracking-widest text-muted-foreground uppercase"
+          >
+            Explorer
+          </p>
+          <p class="flex items-center gap-1 px-3 py-1 text-foreground">
+            <ChevronDown size={14} aria-hidden="true" /> portfolio
+          </p>
+          <ul>
+            <li>
+              <button
+                type="button"
+                class="ide-file"
+                data-ide-open="about"
+                data-active={initial === "about" ? "" : undefined}
+              >
+                <FileText
+                  size={14}
+                  class="text-code-property"
+                  aria-hidden="true"
+                />
+                about.md
+              </button>
+            </li>
+            <li>
+              <a href="#blogs" class="ide-file">
+                <FolderOpen
+                  size={14}
+                  class="text-code-keyword"
+                  aria-hidden="true"
+                />
+                blogs
+              </a>
+              <ul>
+                {
+                  posts.map((post) => (
+                    <li>
+                      <a
+                        href={`/blog/${post.id}`}
+                        class="ide-file ide-file-nested"
+                        title={post.data.title}
+                      >
+                        <span class="truncate">{post.id}.mdx</span>
+                      </a>
+                    </li>
+                  ))
+                }
+              </ul>
+            </li>
+            <li>
+              <button
+                type="button"
+                class="ide-file"
+                data-ide-open="skills"
+                data-active={initial === "skills" ? "" : undefined}
+              >
+                <Braces size={14} class="text-code-string" aria-hidden="true" />
+                skills.json
+              </button>
+            </li>
+            <li>
+              <button
+                type="button"
+                class="ide-file"
+                data-ide-open="syed"
+                data-active={initial === "syed" ? "" : undefined}
+              >
+                <FileCode
+                  size={14}
+                  class="text-code-keyword"
+                  aria-hidden="true"
+                />
+                syed.ts
+              </button>
+            </li>
+          </ul>
+        </nav>
+
+        <div class="min-w-0">
+          <!-- Tabs -->
+          <div
+            role="tablist"
+            aria-label="Files"
+            class="flex overflow-x-auto overflow-y-hidden border-b border-code-border bg-card/60"
+          >
+            {
+              files.map((file) => (
+                <button
+                  type="button"
+                  role="tab"
+                  id={`${file.id}-tab`}
+                  aria-controls={file.id}
+                  aria-selected={file.id === initial ? "true" : "false"}
+                  tabindex={file.id === initial ? 0 : -1}
+                  class="ide-tab"
+                >
+                  {file.id === "about" ? (
+                    <FileText
+                      size={14}
+                      class="text-code-property"
+                      aria-hidden="true"
+                    />
+                  ) : file.id === "skills" ? (
+                    <Braces
+                      size={14}
+                      class="text-code-string"
+                      aria-hidden="true"
+                    />
+                  ) : (
+                    <FileCode
+                      size={14}
+                      class="text-code-keyword"
+                      aria-hidden="true"
+                    />
+                  )}
+                  {file.name}
+                </button>
+              ))
+            }
+          </div>
+
+          <!-- Panels -->
+          <div class="lg:min-h-112">
+            {
+              files.map((file) => (
+                <div
+                  role="tabpanel"
+                  id={file.id}
+                  aria-labelledby={`${file.id}-tab`}
+                  data-lang={file.lang}
+                  hidden={file.id !== initial}
+                  class="ide-panel"
+                >
+                  {file.id === "about" ? (
+                    <About />
+                  ) : file.id === "skills" ? (
+                    <Skills />
+                  ) : (
+                    <CodeCard />
+                  )}
+                </div>
+              ))
+            }
+          </div>
+        </div>
+      </div>
+
+      <!-- Status bar -->
+      <div
+        class="flex items-center justify-between gap-4 border-t border-code-border bg-card/60 px-4 py-1.5 font-mono text-[0.6875rem] text-muted-foreground"
+      >
+        <span class="flex items-center gap-1.5">
+          <GitBranch size={12} aria-hidden="true" /> master
+        </span>
+        <span class="flex items-center gap-4">
+          <span data-ide-lang>{files[0].lang}</span>
+          <span class="hidden sm:inline">UTF-8</span>
+        </span>
+      </div>
+    </div>
+  </div>
+  <noscript>
+    <style>
+      .ide-panel[hidden] {
+        display: block !important;
+      }
+    </style>
+  </noscript>
+</section>
+
+<script>
+  const root = document.querySelector<HTMLElement>("[data-ide]");
+
+  if (root) {
+    const tabs = Array.from(
+      root.querySelectorAll<HTMLButtonElement>('[role="tab"]'),
+    );
+    const panels = Array.from(
+      root.querySelectorAll<HTMLElement>('[role="tabpanel"]'),
+    );
+    const openers = Array.from(
+      root.querySelectorAll<HTMLElement>("[data-ide-open]"),
+    );
+    const lang = root.querySelector<HTMLElement>("[data-ide-lang]");
+    const ids = panels.map((panel) => panel.id);
+
+    const activate = (id: string, focusTab = false) => {
+      for (const tab of tabs) {
+        const selected = tab.getAttribute("aria-controls") === id;
+        tab.setAttribute("aria-selected", String(selected));
+        tab.tabIndex = selected ? 0 : -1;
+        if (selected && focusTab) tab.focus();
+      }
+      for (const panel of panels) panel.hidden = panel.id !== id;
+      for (const opener of openers) {
+        opener.toggleAttribute("data-active", opener.dataset.ideOpen === id);
+      }
+      if (lang) {
+        lang.textContent =
+          panels.find((panel) => panel.id === id)?.dataset.lang ?? "";
+      }
+      history.replaceState(null, "", `#${id}`);
+    };
+
+    const reveal = (id: string) => {
+      activate(id);
+      document.getElementById(id)?.scrollIntoView({ block: "start" });
+    };
+
+    tabs.forEach((tab, index) => {
+      tab.addEventListener("click", () =>
+        activate(tab.getAttribute("aria-controls") ?? ids[0]),
+      );
+      tab.addEventListener("keydown", (event) => {
+        const next =
+          event.key === "ArrowRight"
+            ? (index + 1) % tabs.length
+            : event.key === "ArrowLeft"
+              ? (index - 1 + tabs.length) % tabs.length
+              : event.key === "Home"
+                ? 0
+                : event.key === "End"
+                  ? tabs.length - 1
+                  : -1;
+        if (next < 0) return;
+        event.preventDefault();
+        activate(tabs[next].getAttribute("aria-controls") ?? ids[0], true);
+      });
+    });
+
+    for (const opener of openers) {
+      opener.addEventListener("click", () =>
+        activate(opener.dataset.ideOpen ?? ids[0]),
+      );
+    }
+
+    // Links to #about / #skills (navbar) open the matching tab.
+    // Hidden panels can't be scrolled to natively, so handle them here.
+    document.addEventListener("click", (event) => {
+      const link = (event.target as Element | null)?.closest("a");
+      if (!link || link.origin !== location.origin) return;
+      if (link.pathname !== location.pathname) return;
+      const id = link.hash.slice(1);
+      if (!ids.includes(id)) return;
+      event.preventDefault();
+      reveal(id);
+    });
+
+    window.addEventListener("hashchange", () => {
+      const id = location.hash.slice(1);
+      if (ids.includes(id)) reveal(id);
+    });
+
+    const initialId = location.hash.slice(1);
+    if (ids.includes(initialId)) reveal(initialId);
+  }
+</script>
