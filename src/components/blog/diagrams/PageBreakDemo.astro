@@ -35,8 +35,8 @@ const rules = [
   {
     n: 4,
     source: "legacy",
-    code: "button { text-transform: uppercase }",
-    effect: "dropdown and buttons shout",
+    code: ".editor label { color: #a8a29e }",
+    effect: "React’s labels fade and shrink",
     delay: 600,
   },
 ] as const;
@@ -55,8 +55,8 @@ const legacyRules = rules.filter((rule) => rule.source === "legacy");
     </div>
 
     <div class="app-header" aria-hidden="true">
-      <span class="app-logo"><span class="app-logo-mark"></span>Beamer</span>
-      <span class="app-tab app-tab-active">Posts</span>
+      <span class="app-logo"><span class="app-logo-mark"></span></span>
+      <span class="app-tab app-tab-active">Docs</span>
       <span class="app-tab">Analytics</span>
       <span class="app-tab">Settings</span>
       <span class="app-avatar"></span>
@@ -65,7 +65,7 @@ const legacyRules = rules.filter((rule) => rule.source === "legacy");
     <div class="page" aria-hidden="true">
       <section class="legacy">
         <p class="zone">Legacy JSP</p>
-        <p class="legacy-heading">New post</p>
+        <p class="legacy-heading">New doc</p>
 
         <span class="field-label">Title</span>
         <div
@@ -75,7 +75,7 @@ const legacyRules = rules.filter((rule) => rule.source === "legacy");
           data-source="tailwind"
           style="--d: 120ms"
         >
-          Spring release notes
+          Team offsite plan
         </div>
 
         <span class="field-label">Content</span>
@@ -95,8 +95,8 @@ const legacyRules = rules.filter((rule) => rule.source === "legacy");
                 data-breaks
                 data-rule="2"
                 data-source="tailwind"
-                style="--d: 300ms">changelog</span
-              > for details.
+                style="--d: 300ms">planning guide</span
+              > first.
             </p>
             <ul
               class="legacy-list"
@@ -105,8 +105,8 @@ const legacyRules = rules.filter((rule) => rule.source === "legacy");
               data-source="tailwind"
               style="--d: 440ms"
             >
-              <li>Faster search</li>
-              <li>New dark mode</li>
+              <li>Book the venue</li>
+              <li>Share the agenda</li>
             </ul>
           </div>
         </div>
@@ -134,34 +134,28 @@ const legacyRules = rules.filter((rule) => rule.source === "legacy");
           <div class="slot">React mounts here</div>
 
           <div class="panel">
-            <p class="panel-title">AI content generator</p>
-            <span class="panel-label">Tone</span>
-            <div
-              class="react-select"
+            <p class="panel-title">AI writing assistant</p>
+            <span
+              class="panel-label"
               data-breaks
               data-rule="4"
               data-source="legacy"
-              style="--d: 600ms"
+              style="--d: 600ms">Tone</span
             >
+            <div class="react-select">
               <span>Professional</span><span class="chevron">⌄</span>
             </div>
-            <span class="panel-label">Brief</span>
+            <span
+              class="panel-label"
+              data-breaks
+              data-rule="4"
+              data-source="legacy"
+              style="--d: 660ms">Brief</span
+            >
             <div class="react-textarea">Write a short brief…</div>
             <div class="actions">
-              <span
-                class="react-button"
-                data-breaks
-                data-rule="4"
-                data-source="legacy"
-                style="--d: 660ms">Generate</span
-              >
-              <span
-                class="react-button react-button-ghost"
-                data-breaks
-                data-rule="4"
-                data-source="legacy"
-                style="--d: 720ms">Cancel</span
-              >
+              <span class="react-button">Generate</span>
+              <span class="react-button react-button-ghost">Cancel</span>
             </div>
           </div>
         </div>
@@ -823,10 +817,10 @@ const legacyRules = rules.filter((rule) => rule.source === "legacy");
     list-style: none;
   }
 
-  .break-demo[data-mounted="true"] .react-select,
-  .break-demo[data-mounted="true"] .react-button {
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
+  .break-demo[data-mounted="true"] .panel-label {
+    color: #a8a29e;
+    font-size: 0.625rem;
+    font-weight: 400;
   }
 
   @keyframes break-demo-shake {
