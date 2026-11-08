@@ -1,0 +1,142 @@
+---
+import type { MarkdownHeading } from "astro";
+
+interface Props {
+  headings: MarkdownHeading[];
+}
+
+const { headings } = Astro.props;
+---
+
+<nav class="blog-toc" aria-labelledby="blog-toc-title">
+  <p id="blog-toc-title" class="blog-toc-title">Table of contents</p>
+  <ol class="blog-toc-list">
+    {
+      headings.map(({ depth, slug, text }) => (
+        <li
+          class:list={[
+            "blog-toc-item",
+            { "blog-toc-item-nested": depth === 3 },
+          ]}
+        >
+          <a href={`#${slug}`} data-toc-link={slug}>
+            {text}
+          </a>
+        </li>
+      ))
+    }
+  </ol>
+</nav>
+
+<script>
+  const links = new Map(
+    [...document.querySelectorAll<HTMLAnchorElement>("[data-toc-link]")].map(
+      (link) => [link.dataset.tocLink!, link],
+    ),
+  );
+  const headings = [...links.keys()]
+    .map((id) => document.getElementById(id))
+    .filter((heading): heading is HTMLElement => heading !== null);
+
+  const setActive = (id: string | undefined) => {
+    for (const [slug, link] of links) {
+      if (slug === id) link.setAttribute("aria-current", "location");
+      else link.removeAttribute("aria-current");
+    }
+  };
+
+  // The active section is the last heading that has scrolled above the
+  // reading line, a third of the way down the viewport.
+  const update = () => {
+    const readingLine = window.innerHeight / 3;
+    let current: string | undefined;
+    for (const heading of headings) {
+      if (heading.getBoundingClientRect().top - readingLine <= 0) {
+        current = heading.id;
+      } else {
+        break;
+      }
+    }
+    setActive(current);
+  };
+
+  let frame = 0;
+  const schedule = () => {
+    cancelAnimationFrame(frame);
+    frame = requestAnimationFrame(update);
+  };
+
+  if (headings.length > 0) {
+    window.addEventListener("scroll", schedule, { passive: true });
+    window.addEventListener("resize", schedule);
+    update();
+  }
+</script>
+
+<style>
+  .blog-toc {
+    position: sticky;
+    top: 7rem;
+    max-height: calc(100vh - 9rem);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+
+  .blog-toc-title {
+    margin: 0 0 1rem;
+    color: var(--blog-text);
+    font-family: "JetBrains Mono", monospace;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    line-height: 1.125rem;
+    text-transform: uppercase;
+  }
+
+  .blog-toc-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .blog-toc-item + .blog-toc-item {
+    margin-top: 0.625rem;
+  }
+
+  .blog-toc-item-nested {
+    padding-left: 0.875rem;
+  }
+
+  .blog-toc a {
+    display: block;
+    color: var(--blog-text-muted);
+    font-size: 0.875rem;
+    line-height: 1.4;
+    text-decoration: none;
+    transition: color 150ms ease;
+  }
+
+  .blog-toc-item-nested a {
+    font-size: 0.8125rem;
+  }
+
+  .blog-toc a:hover {
+    color: var(--blog-text);
+  }
+
+  .blog-toc a[aria-current="location"] {
+    color: var(--blog-accent);
+  }
+
+  .blog-toc a:focus-visible {
+    outline: 2px solid var(--blog-accent);
+    outline-offset: 2px;
+    border-radius: 0.25rem;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .blog-toc a {
+      transition: none;
+    }
+  }
+</style>

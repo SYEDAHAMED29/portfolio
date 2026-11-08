@@ -1,5 +1,9 @@
 ---
 import { siteData } from "../../data/site";
+
+// The design credit only applies to the blog pages.
+const { pathname } = Astro.url;
+const isBlog = pathname === "/blog" || pathname.startsWith("/blog/");
 ---
 
 <footer class="border-t border-border px-6 py-8">
@@ -9,6 +13,22 @@ import { siteData } from "../../data/site";
     <p class="text-xs text-muted-foreground">
       © {new Date().getFullYear()}
       {siteData.name}
-    </p><p class="font-mono text-xs text-muted-foreground">Built with Astro</p>
+    </p><p class="font-mono text-xs text-muted-foreground">
+      Built with Astro{
+        isBlog && (
+          <>
+            {" · "}Blog design inspired by{" "}
+            <a
+              href="https://www.joshwcomeau.com/"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="underline underline-offset-2 transition-colors hover:text-foreground"
+            >
+              Josh W. Comeau
+            </a>
+          </>
+        )
+      }
+    </p>
   </div>
 </footer>

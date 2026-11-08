@@ -2,6 +2,20 @@
 import { Menu, X } from "@lucide/astro";
 import { siteData } from "../../data/site";
 import BrandIcon from "./BrandIcon.astro";
+
+interface Props {
+  homeHref?: string;
+}
+
+const { homeHref = "#hero" } = Astro.props;
+// Section anchors (#about) need the home path when used off the home page;
+// page links (/blog) are already absolute and must be left alone.
+const sectionHref = (href: string) =>
+  href.startsWith("#") && homeHref !== "#hero" ? `/${href}` : href;
+// Highlight a page link while the reader is on that page (or below it).
+const isCurrent = (href: string) =>
+  href.startsWith("/") &&
+  (Astro.url.pathname === href || Astro.url.pathname.startsWith(`${href}/`));
 ---
 
 <nav
@@ -12,7 +26,7 @@ import BrandIcon from "./BrandIcon.astro";
     class="container-narrow flex h-16 items-center justify-between px-6 lg:px-0"
   >
     <a
-      href="#hero"
+      href={homeHref}
       class="font-display text-2xl font-semibold tracking-tight text-foreground"
     >
       SYED<span class="text-primary">.</span>
@@ -21,8 +35,14 @@ import BrandIcon from "./BrandIcon.astro";
       {
         siteData.nav.map((item) => (
           <a
-            href={item.href}
-            class="text-base text-muted-foreground transition-colors hover:text-foreground"
+            href={sectionHref(item.href)}
+            class:list={[
+              "text-base transition-colors hover:text-foreground",
+              isCurrent(item.href)
+                ? "text-foreground"
+                : "text-muted-foreground",
+            ]}
+            aria-current={isCurrent(item.href) ? "page" : undefined}
           >
             {item.label}
           </a>
@@ -86,8 +106,14 @@ import BrandIcon from "./BrandIcon.astro";
       {
         siteData.nav.map((item) => (
           <a
-            href={item.href}
-            class="text-base text-muted-foreground transition-colors hover:text-foreground"
+            href={sectionHref(item.href)}
+            class:list={[
+              "text-base transition-colors hover:text-foreground",
+              isCurrent(item.href)
+                ? "text-foreground"
+                : "text-muted-foreground",
+            ]}
+            aria-current={isCurrent(item.href) ? "page" : undefined}
             data-mobile-link
           >
             {item.label}

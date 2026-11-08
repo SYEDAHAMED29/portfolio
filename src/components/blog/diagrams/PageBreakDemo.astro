@@ -1,0 +1,912 @@
+---
+/**
+ * Interactive "mount React and watch the page break" demo.
+ *
+ * A light, app-like legacy page sits next to an empty React slot. Mounting the
+ * React panel (automatically when scrolled into view, or with the toggle)
+ * breaks both sides at once. Every broken element gets a numbered badge that
+ * points at the rule responsible in the Styles pane below: amber rules come
+ * from Tailwind Preflight and hit the legacy page, blue rules come from the
+ * legacy stylesheet and hit React. Plain HTML/CSS with a small script.
+ */
+
+const rules = [
+  {
+    n: 1,
+    source: "tailwind",
+    code: "input { padding: 0 }",
+    effect: "inputs collapse",
+    delay: 120,
+  },
+  {
+    n: 2,
+    source: "tailwind",
+    code: "a { color: inherit }",
+    effect: "link turns grey",
+    delay: 300,
+  },
+  {
+    n: 3,
+    source: "tailwind",
+    code: "ul { list-style: none }",
+    effect: "bullets vanish",
+    delay: 440,
+  },
+  {
+    n: 4,
+    source: "legacy",
+    code: "button { text-transform: uppercase }",
+    effect: "dropdown and buttons shout",
+    delay: 600,
+  },
+] as const;
+
+const tailwindRules = rules.filter((rule) => rule.source === "tailwind");
+const legacyRules = rules.filter((rule) => rule.source === "legacy");
+---
+
+<figure class="blog-figure break-demo" data-break-demo data-mounted="false">
+  <div class="window">
+    <div class="bar" aria-hidden="true">
+      <span class="dot dot-red"></span>
+      <span class="dot dot-yellow"></span>
+      <span class="dot dot-green"></span>
+      <span class="url">edit.jsp</span>
+    </div>
+
+    <div class="app-header" aria-hidden="true">
+      <span class="app-logo"><span class="app-logo-mark"></span>Beamer</span>
+      <span class="app-tab app-tab-active">Posts</span>
+      <span class="app-tab">Analytics</span>
+      <span class="app-tab">Settings</span>
+      <span class="app-avatar"></span>
+    </div>
+
+    <div class="page" aria-hidden="true">
+      <section class="legacy">
+        <p class="zone">Legacy JSP</p>
+        <p class="legacy-heading">New post</p>
+
+        <span class="field-label">Title</span>
+        <div
+          class="legacy-input"
+          data-breaks
+          data-rule="1"
+          data-source="tailwind"
+          style="--d: 120ms"
+        >
+          Spring release notes
+        </div>
+
+        <span class="field-label">Content</span>
+        <div class="editor">
+          <div class="editor-toolbar">
+            <span class="tool tool-bold">B</span>
+            <span class="tool tool-italic">I</span>
+            <span class="tool tool-underline">U</span>
+            <span class="tool-divider"></span>
+            <span class="tool">⛓</span>
+            <span class="tool">☰</span>
+          </div>
+          <div class="editor-body">
+            <p class="legacy-text">
+              See the <span
+                class="legacy-link"
+                data-breaks
+                data-rule="2"
+                data-source="tailwind"
+                style="--d: 300ms">changelog</span
+              > for details.
+            </p>
+            <ul
+              class="legacy-list"
+              data-breaks
+              data-rule="3"
+              data-source="tailwind"
+              style="--d: 440ms"
+            >
+              <li>Faster search</li>
+              <li>New dark mode</li>
+            </ul>
+          </div>
+        </div>
+
+        <span class="field-label">Link URL</span>
+        <div
+          class="legacy-input"
+          data-breaks
+          data-rule="1"
+          data-source="tailwind"
+          style="--d: 180ms"
+        >
+          https://example.com
+        </div>
+
+        <div class="legacy-actions">
+          <span class="legacy-button legacy-button-primary">Publish</span>
+          <span class="legacy-button">Save draft</span>
+        </div>
+      </section>
+
+      <section class="react">
+        <p class="zone zone-react">.react-root</p>
+        <div class="react-stage">
+          <div class="slot">React mounts here</div>
+
+          <div class="panel">
+            <p class="panel-title">AI content generator</p>
+            <span class="panel-label">Tone</span>
+            <div
+              class="react-select"
+              data-breaks
+              data-rule="4"
+              data-source="legacy"
+              style="--d: 600ms"
+            >
+              <span>Professional</span><span class="chevron">⌄</span>
+            </div>
+            <span class="panel-label">Brief</span>
+            <div class="react-textarea">Write a short brief…</div>
+            <div class="actions">
+              <span
+                class="react-button"
+                data-breaks
+                data-rule="4"
+                data-source="legacy"
+                style="--d: 660ms">Generate</span
+              >
+              <span
+                class="react-button react-button-ghost"
+                data-breaks
+                data-rule="4"
+                data-source="legacy"
+                style="--d: 720ms">Cancel</span
+              >
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <div class="styles">
+      <p class="styles-tab">Styles</p>
+      <div class="styles-groups">
+        <div class="styles-group" data-source="tailwind">
+          <p class="styles-source">From Tailwind Preflight → legacy page</p>
+          <ol class="rule-list">
+            {
+              tailwindRules.map((rule) => (
+                <li class="rule" style={`--d: ${rule.delay}ms`}>
+                  <span class="rule-number">{rule.n}</span>
+                  <code>{rule.code}</code>
+                  <span class="rule-effect">{rule.effect}</span>
+                </li>
+              ))
+            }
+          </ol>
+        </div>
+        <div class="styles-group" data-source="legacy">
+          <p class="styles-source">From legacy styles.css → React</p>
+          <ol class="rule-list" start="4">
+            {
+              legacyRules.map((rule) => (
+                <li class="rule" style={`--d: ${rule.delay}ms`}>
+                  <span class="rule-number">{rule.n}</span>
+                  <code>{rule.code}</code>
+                  <span class="rule-effect">{rule.effect}</span>
+                </li>
+              ))
+            }
+          </ol>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="controls">
+    <button
+      type="button"
+      class="toggle"
+      data-break-demo-toggle
+      aria-pressed="false"
+    >
+      Mount React
+    </button>
+    <span class="status" data-break-demo-status aria-live="polite"
+      >Legacy page, all good</span
+    >
+  </div>
+
+  <figcaption>
+    Mount one React component and both sides break. Each number points to the
+    rule that did it: Tailwind’s reset reaches out, and the page’s CSS reaches
+    in.
+  </figcaption>
+</figure>
+
+<script>
+  import { playSound } from "../../../lib/sound";
+
+  // Pops line up with each rule lighting up in the Styles pane.
+  const RULE_DELAYS_MS = [120, 300, 440, 600];
+  const BADGE_POP_OFFSET_MS = 120;
+
+  const playBreak = () => {
+    playSound("break");
+    for (const delay of RULE_DELAYS_MS) {
+      playSound("pop", delay + BADGE_POP_OFFSET_MS);
+    }
+  };
+
+  // Browsers only allow audio after the reader has clicked, tapped, or typed
+  // somewhere on the page; scrolling doesn't count. Without that, trying to
+  // play just logs a warning, so the scroll-triggered mount checks first.
+  const canPlayAudio = () => navigator.userActivation?.hasBeenActive ?? false;
+
+  for (const demo of document.querySelectorAll<HTMLElement>(
+    "[data-break-demo]",
+  )) {
+    const toggle = demo.querySelector<HTMLButtonElement>(
+      "[data-break-demo-toggle]",
+    );
+    const status = demo.querySelector<HTMLElement>("[data-break-demo-status]");
+    if (!toggle || !status) continue;
+
+    const broken = demo.querySelectorAll("[data-breaks]").length;
+    const rules = demo.querySelectorAll(".rule").length;
+    let touched = false;
+
+    const setMounted = (mounted: boolean) => {
+      demo.dataset.mounted = String(mounted);
+      toggle.setAttribute("aria-pressed", String(mounted));
+      toggle.textContent = mounted ? "Unmount React" : "Mount React";
+      status.textContent = mounted
+        ? `${rules} rules, ${broken} broken elements`
+        : "Legacy page, all good";
+    };
+
+    toggle.addEventListener("click", () => {
+      touched = true;
+      const mounting = demo.dataset.mounted !== "true";
+      setMounted(mounting);
+      if (mounting) {
+        playBreak();
+      } else {
+        playSound("fix");
+      }
+    });
+
+    // Play it once when the reader reaches it, unless they got there first.
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (!entries.some((entry) => entry.isIntersecting)) return;
+        observer.disconnect();
+        window.setTimeout(() => {
+          if (touched) return;
+          setMounted(true);
+          if (canPlayAudio()) playBreak();
+        }, 700);
+      },
+      { threshold: 0.5 },
+    );
+    observer.observe(demo);
+  }
+</script>
+
+<style>
+  /* The demo is a light "real app" window inside the dark article. */
+  .break-demo {
+    --demo-bg: #ffffff;
+    --demo-surface: #f6f7f9;
+    --demo-border: #e3e6eb;
+    --demo-border-strong: #cdd2da;
+    --demo-text: #1d2330;
+    --demo-muted: #667085;
+    --demo-link: #2563eb;
+    --demo-tailwind: #b45309;
+    --demo-legacy: #2563eb;
+    --ease-pop: cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  .window {
+    overflow: hidden;
+    border: 1px solid var(--blog-border-strong);
+    border-radius: 0.75rem;
+    background: var(--demo-bg);
+    box-shadow: 0 1.25rem 2.5rem -1rem rgb(0 0 0 / 0.6);
+    color: var(--demo-text);
+  }
+
+  .bar {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    border-bottom: 1px solid var(--demo-border);
+    background: var(--demo-surface);
+    padding: 0.625rem 0.875rem;
+  }
+
+  .dot {
+    width: 0.6875rem;
+    height: 0.6875rem;
+    border-radius: 50%;
+  }
+
+  .dot-red {
+    background: #ff5f57;
+  }
+
+  .dot-yellow {
+    background: #febc2e;
+  }
+
+  .dot-green {
+    background: #28c840;
+  }
+
+  .url {
+    margin-inline: auto;
+    border-radius: 0.375rem;
+    background: var(--demo-bg);
+    color: var(--demo-muted);
+    padding: 0.125rem 0.75rem;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 0.75rem;
+    transform: translateX(-1.25rem);
+  }
+
+  .page {
+    display: grid;
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+    gap: 1.5rem;
+    padding: 1.25rem 1.25rem 1.5rem;
+    font-family: "Inter", sans-serif;
+    font-size: 1rem;
+    line-height: 1.5;
+  }
+
+  .zone {
+    margin: 0 0 0.875rem;
+    color: var(--demo-muted);
+    font-family: "JetBrains Mono", monospace;
+    font-size: 0.6875rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .zone-react {
+    color: var(--demo-legacy);
+  }
+
+  /* App chrome: makes the legacy side read as a real web app */
+  .app-header {
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+    background: #1f3a5f;
+    padding: 0.625rem 1.25rem;
+    color: #dbe5f1;
+    font-family: "Inter", sans-serif;
+    font-size: 0.8125rem;
+  }
+
+  .app-logo {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4375rem;
+    margin-right: 0.5rem;
+    color: #ffffff;
+    font-weight: 800;
+    letter-spacing: 0.02em;
+  }
+
+  .app-logo-mark {
+    width: 0.875rem;
+    height: 0.875rem;
+    border-radius: 0.1875rem;
+    background: linear-gradient(135deg, #7cc4ff, #3b82f6);
+  }
+
+  .app-tab {
+    padding-bottom: 0.125rem;
+  }
+
+  .app-tab-active {
+    border-bottom: 2px solid #7cc4ff;
+    color: #ffffff;
+    font-weight: 600;
+  }
+
+  .app-avatar {
+    width: 1.375rem;
+    height: 1.375rem;
+    margin-left: auto;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #fbbf24, #f97316);
+  }
+
+  /* Legacy page: a classic admin form */
+  .legacy-heading {
+    margin: 0 0 1rem;
+    font-size: 1.25rem;
+    font-weight: 700;
+  }
+
+  .field-label {
+    display: block;
+    margin-bottom: 0.3125rem;
+    color: #3d4656;
+    font-size: 0.75rem;
+    font-weight: 600;
+  }
+
+  .legacy-input {
+    margin-bottom: 1rem;
+    border: 1px solid #b9c0ca;
+    border-radius: 0.1875rem;
+    background: #ffffff;
+    box-shadow: inset 0 1px 2px rgb(16 24 40 / 0.08);
+    padding: 0.5rem 0.625rem;
+    font-size: 1rem;
+    line-height: 1.25;
+  }
+
+  .editor {
+    margin-bottom: 1rem;
+    overflow: hidden;
+    border: 1px solid #b9c0ca;
+    border-radius: 0.1875rem;
+  }
+
+  .editor-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    border-bottom: 1px solid var(--demo-border);
+    background: linear-gradient(#fbfcfd, #eef1f4);
+    padding: 0.25rem 0.375rem;
+  }
+
+  .tool {
+    display: grid;
+    width: 1.5rem;
+    height: 1.5rem;
+    place-items: center;
+    border-radius: 0.1875rem;
+    color: #3d4656;
+    font-size: 0.8125rem;
+  }
+
+  .tool-bold {
+    font-weight: 800;
+  }
+
+  .tool-italic {
+    font-family: Georgia, serif;
+    font-style: italic;
+  }
+
+  .tool-underline {
+    text-decoration: underline;
+  }
+
+  .tool-divider {
+    width: 1px;
+    height: 1rem;
+    margin-inline: 0.25rem;
+    background: var(--demo-border-strong);
+  }
+
+  .editor-body {
+    padding: 0.625rem 0.75rem 0.125rem;
+  }
+
+  .legacy-text {
+    margin: 0 0 0.5rem;
+    font-size: 0.9375rem;
+  }
+
+  .legacy-link {
+    color: var(--demo-link);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  .legacy-list {
+    margin: 0 0 0.625rem;
+    padding-left: 1.25rem;
+    font-size: 0.9375rem;
+    list-style: disc;
+  }
+
+  .legacy-actions {
+    display: flex;
+    gap: 0.5rem;
+  }
+
+  .legacy-button {
+    border: 1px solid #b9c0ca;
+    border-radius: 0.1875rem;
+    background: linear-gradient(#ffffff, #eef0f3);
+    color: #2b3340;
+    padding: 0.3125rem 0.875rem;
+    font-size: 0.8125rem;
+    font-weight: 600;
+  }
+
+  .legacy-button-primary {
+    border-color: #2a63ad;
+    background: linear-gradient(#4a90e2, #2f6fc4);
+    color: #ffffff;
+    text-shadow: 0 -1px 0 rgb(0 0 0 / 0.2);
+  }
+
+  /* React side: shadcn-style panel */
+  .react {
+    position: relative;
+  }
+
+  /* Slot and panel share one grid cell, so the slot is exactly panel-sized. */
+  .react-stage {
+    display: grid;
+  }
+
+  .slot,
+  .panel {
+    grid-area: 1 / 1;
+  }
+
+  .slot {
+    display: grid;
+    place-items: center;
+    border: 1.5px dashed var(--demo-border-strong);
+    border-radius: 0.625rem;
+    color: var(--demo-muted);
+    font-family: "JetBrains Mono", monospace;
+    font-size: 0.75rem;
+    transition: opacity 250ms ease;
+  }
+
+  .panel {
+    position: relative;
+    border: 1px solid var(--demo-border);
+    border-radius: 0.75rem;
+    background: var(--demo-bg);
+    box-shadow: 0 1px 3px rgb(16 24 40 / 0.08);
+    padding: 1rem;
+    opacity: 0;
+    transform: translateY(0.5rem) scale(0.98);
+    transition:
+      opacity 300ms ease,
+      transform 300ms ease;
+  }
+
+  .panel-title {
+    margin: 0 0 0.75rem;
+    font-size: 0.9375rem;
+    font-weight: 700;
+  }
+
+  .panel-label {
+    display: block;
+    margin-bottom: 0.25rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+  }
+
+  .react-select,
+  .react-textarea {
+    border: 1px solid var(--demo-border-strong);
+    border-radius: 0.375rem;
+    background: var(--demo-bg);
+    font-size: 0.875rem;
+  }
+
+  .react-select {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.75rem;
+    padding: 0.4375rem 0.625rem;
+  }
+
+  .chevron {
+    color: var(--demo-muted);
+  }
+
+  .react-textarea {
+    min-height: 3.5rem;
+    margin-bottom: 0.875rem;
+    color: var(--demo-muted);
+    padding: 0.4375rem 0.625rem;
+  }
+
+  .actions {
+    display: flex;
+    gap: 0.5rem;
+  }
+
+  .react-button {
+    border: 1px solid #111827;
+    border-radius: 0.375rem;
+    background: #111827;
+    color: #ffffff;
+    padding: 0.375rem 0.875rem;
+    font-size: 0.8125rem;
+    font-weight: 600;
+  }
+
+  .react-button-ghost {
+    border-color: var(--demo-border-strong);
+    background: var(--demo-bg);
+    color: var(--demo-text);
+  }
+
+  /* Breakage markers: dashed outline plus a numbered badge, colored by the
+     stylesheet that caused it. */
+  [data-breaks] {
+    --source: var(--demo-tailwind);
+    position: relative;
+    outline: 1.5px dashed transparent;
+    outline-offset: 3px;
+    transition:
+      outline-color 300ms ease,
+      padding 450ms ease,
+      padding-left 450ms ease,
+      font-size 450ms ease,
+      color 450ms ease;
+    transition-delay: 0ms, var(--d), var(--d), var(--d), var(--d);
+  }
+
+  [data-breaks][data-source="legacy"] {
+    --source: var(--demo-legacy);
+  }
+
+  [data-breaks]::after {
+    content: attr(data-rule);
+    position: absolute;
+    top: -0.625rem;
+    right: -0.625rem;
+    display: grid;
+    width: 1.25rem;
+    height: 1.25rem;
+    place-items: center;
+    border: 2px solid var(--demo-bg);
+    border-radius: 50%;
+    background: var(--source);
+    color: #ffffff;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 0.6875rem;
+    font-weight: 800;
+    line-height: 1;
+    letter-spacing: 0;
+    text-transform: none;
+    transform: scale(0);
+    transition: transform 300ms var(--ease-pop);
+  }
+
+  /* Styles pane (DevTools-like) */
+  .styles {
+    border-top: 1px solid var(--demo-border);
+    background: var(--demo-surface);
+    padding: 0.75rem 1.25rem 1rem;
+  }
+
+  .styles-tab {
+    display: inline-block;
+    margin: 0 0 0.75rem;
+    border-bottom: 2px solid var(--demo-text);
+    padding-bottom: 0.25rem;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 0.6875rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  .styles-groups {
+    display: grid;
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+    gap: 1rem 1.5rem;
+  }
+
+  .styles-group {
+    --source: var(--demo-tailwind);
+  }
+
+  .styles-group[data-source="legacy"] {
+    --source: var(--demo-legacy);
+  }
+
+  .styles-source {
+    margin: 0 0 0.5rem;
+    color: var(--source);
+    font-family: "JetBrains Mono", monospace;
+    font-size: 0.6875rem;
+    font-weight: 700;
+  }
+
+  .rule-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .rule {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    column-gap: 0.5rem;
+    align-items: baseline;
+    opacity: 0.4;
+    transition: opacity 250ms ease;
+  }
+
+  .rule + .rule {
+    margin-top: 0.5rem;
+  }
+
+  .rule-number {
+    display: grid;
+    width: 1.125rem;
+    height: 1.125rem;
+    place-items: center;
+    border-radius: 50%;
+    background: var(--demo-border-strong);
+    color: #ffffff;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 0.625rem;
+    font-weight: 800;
+    transform: translateY(0.1875rem);
+    transition: background-color 250ms ease;
+  }
+
+  /* Reset the article's inline-code styling inside the light pane. */
+  .rule code {
+    border-radius: 0;
+    background: none;
+    padding: 0;
+    color: var(--demo-text);
+    font-family: "JetBrains Mono", monospace;
+    font-size: 0.75rem;
+    overflow-wrap: anywhere;
+  }
+
+  .rule-effect {
+    grid-column: 2;
+    color: var(--demo-muted);
+    font-size: 0.75rem;
+  }
+
+  /* Mounted: everything breaks */
+  .break-demo[data-mounted="true"] .page {
+    animation: break-demo-shake 420ms ease;
+  }
+
+  .break-demo[data-mounted="true"] .slot {
+    opacity: 0;
+  }
+
+  .break-demo[data-mounted="true"] .panel {
+    opacity: 1;
+    transform: none;
+  }
+
+  .break-demo[data-mounted="true"] [data-breaks] {
+    outline-color: var(--source);
+    transition-delay: var(--d), var(--d), var(--d), var(--d), var(--d);
+  }
+
+  .break-demo[data-mounted="true"] [data-breaks]::after {
+    transform: scale(1);
+    transition-delay: var(--d, 0ms);
+  }
+
+  .break-demo[data-mounted="true"] .rule {
+    opacity: 1;
+    transition-delay: var(--d, 0ms);
+  }
+
+  .break-demo[data-mounted="true"] .rule-number {
+    background: var(--source);
+    transition-delay: var(--d, 0ms);
+  }
+
+  .break-demo[data-mounted="true"] .rule-effect {
+    color: var(--source);
+    font-weight: 600;
+  }
+
+  .break-demo[data-mounted="true"] .legacy-input {
+    padding: 0;
+    font-size: 0.875rem;
+  }
+
+  .break-demo[data-mounted="true"] .legacy-link {
+    color: inherit;
+  }
+
+  .break-demo[data-mounted="true"] .legacy-list {
+    padding-left: 0;
+    list-style: none;
+  }
+
+  .break-demo[data-mounted="true"] .react-select,
+  .break-demo[data-mounted="true"] .react-button {
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  @keyframes break-demo-shake {
+    0%,
+    100% {
+      transform: none;
+    }
+    20% {
+      transform: translateX(-5px) rotate(-0.4deg);
+    }
+    40% {
+      transform: translateX(5px) rotate(0.4deg);
+    }
+    60% {
+      transform: translateX(-3px);
+    }
+    80% {
+      transform: translateX(2px);
+    }
+  }
+
+  /* Controls (dark, to match the article) */
+  .controls {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem 1rem;
+    margin-top: 1rem;
+  }
+
+  .toggle {
+    border: 0;
+    border-radius: 0.375rem;
+    background: var(--blog-accent);
+    color: hsl(var(--primary-foreground));
+    cursor: pointer;
+    padding: 0.5rem 1rem;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 0.8125rem;
+    font-weight: 700;
+  }
+
+  .toggle:hover {
+    filter: brightness(1.08);
+  }
+
+  .toggle:focus-visible {
+    outline: 2px solid var(--blog-accent);
+    outline-offset: 3px;
+  }
+
+  .status {
+    color: var(--blog-text-muted);
+    font-family: "JetBrains Mono", monospace;
+    font-size: 0.8125rem;
+  }
+
+  .break-demo[data-mounted="true"] .status {
+    color: hsl(var(--destructive));
+    font-weight: 700;
+  }
+
+  @media (max-width: 36rem) {
+    .page,
+    .styles-groups {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .break-demo *,
+    .break-demo *::after {
+      transition: none !important;
+      animation: none !important;
+    }
+  }
+</style>

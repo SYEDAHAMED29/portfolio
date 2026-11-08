@@ -49,6 +49,26 @@
   --pill-bg: 225 15% 12%;
   --pill-foreground: 210 20% 80%;
   --pill-border: 225 15% 18%;
+  --blog-bg: hsl(var(--background));
+  --blog-surface: hsl(var(--card));
+  --blog-surface-subtle: hsl(var(--secondary));
+  --blog-text: hsl(var(--foreground));
+  --blog-text-muted: hsl(var(--muted-foreground));
+  --blog-text-on-surface: hsl(var(--pill-foreground));
+  --blog-border: hsl(var(--border));
+  --blog-border-strong: hsl(var(--code-border));
+  --blog-accent: hsl(var(--primary));
+  --blog-accent-code: hsl(var(--code-string));
+  --blog-accent-info: hsl(var(--code-property));
+  --blog-code-bg: hsl(var(--code-bg));
+  /* Section headings: a hue not used for links (amber) or callouts (blue/green). */
+  --blog-heading: hsl(255 90% 82%);
+  --blog-prose-width: 45rem;
+  --blog-toc-width: 15rem;
+  --blog-toc-gap: 4rem;
+  --blog-bleed: 1.5rem;
+  --blog-list-width: 68.75rem;
+  --blog-gutter: 1rem;
 }
 * {
   border-color: hsl(var(--border));
@@ -195,5 +215,705 @@ button:focus-visible {
     animation-iteration-count: 1 !important;
     scroll-behavior: auto !important;
     transition-duration: 0.01ms !important;
+  }
+}
+
+.blog-listing-page {
+  padding: 8rem 1rem 5rem;
+}
+
+.blog-listing-container {
+  max-width: var(--blog-list-width);
+}
+
+.blog-listing-header {
+  max-width: 36rem;
+  margin-bottom: 3rem;
+}
+
+.blog-listing-title-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.blog-listing-header h1 {
+  margin: 0;
+  color: var(--blog-text);
+  font-family: "Space Grotesk", sans-serif;
+  font-size: clamp(2.25rem, 5vw, 3.75rem);
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+
+.blog-listing-header > p {
+  max-width: 32rem;
+  margin: 0;
+  color: var(--blog-text-muted);
+  font-size: 1.125rem;
+  line-height: 1.55;
+}
+
+.blog-status,
+.blog-draft,
+.blog-category {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.6875rem;
+  line-height: 1rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.blog-status,
+.blog-draft {
+  border: 1px solid hsl(var(--primary) / 0.3);
+  border-radius: 999px;
+  background: hsl(var(--primary) / 0.1);
+  color: var(--blog-accent);
+  padding: 0.25rem 0.625rem;
+}
+
+.blog-listing-section + .blog-listing-section {
+  margin-top: 3.5rem;
+}
+
+.blog-section-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+}
+
+.blog-section-heading h2 {
+  margin: 0;
+  color: var(--blog-text);
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 1.5rem;
+  line-height: 1.25;
+}
+
+.blog-card-stack {
+  display: grid;
+  gap: 1rem;
+}
+
+.blog-card {
+  border: 1px solid var(--blog-border);
+  border-radius: 0.375rem;
+  background: var(--blog-surface);
+  padding: 1.25rem;
+  transition:
+    border-color 180ms ease,
+    background-color 180ms ease;
+}
+
+.blog-card:hover {
+  border-color: hsl(var(--primary) / 0.55);
+  background: hsl(var(--card) / 0.85);
+}
+
+.blog-card-featured {
+  border-top: 2px solid var(--blog-accent);
+  padding-top: calc(1.25rem - 1px);
+}
+
+.blog-card-heading,
+.blog-card-footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.blog-category {
+  margin: 0;
+  color: var(--blog-accent-info);
+}
+
+.blog-card-title {
+  margin: 0.625rem 0 0.5rem;
+  color: var(--blog-text);
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 1.375rem;
+  line-height: 1.3;
+}
+
+.blog-card-title a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.blog-card-title a:hover {
+  color: var(--blog-accent);
+}
+
+.blog-card-title a:focus-visible {
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 3px;
+}
+
+.blog-card-description {
+  max-width: 48rem;
+  margin: 0 0 1.25rem;
+  color: var(--blog-text-on-surface);
+  font-size: 1rem;
+  line-height: 1.6;
+}
+
+.blog-card-footer {
+  align-items: flex-end;
+}
+
+.blog-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.375rem;
+  color: var(--blog-text-muted);
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.75rem;
+  line-height: 1.125rem;
+}
+
+.blog-card .blog-meta {
+  color: var(--blog-text-on-surface);
+}
+
+.blog-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.375rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.blog-tags li {
+  border: 1px solid hsl(var(--pill-border));
+  border-radius: 0.25rem;
+  background: var(--blog-surface-subtle);
+  color: var(--blog-text-on-surface);
+  padding: 0.25rem 0.5rem;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.6875rem;
+  line-height: 1rem;
+}
+
+.blog-hero .blog-tags li {
+  background: hsl(var(--background) / 0.55);
+}
+
+.blog-article-page {
+  padding-bottom: 5rem;
+}
+
+/* Centered column shared by the header and the article body. */
+.blog-article-shell {
+  width: min(100% - 2 * var(--blog-gutter), var(--blog-prose-width));
+  margin-inline: auto;
+}
+
+/* Full-width header band; layered hills fade it into the page background. */
+.blog-hero {
+  --blog-hero-bg: hsl(222 28% 13%);
+  --blog-hero-hill-back: hsl(223 25% 10%);
+  --blog-hero-hill-middle: hsl(224 22% 7.5%);
+
+  margin-bottom: 2.5rem;
+  background:
+    radial-gradient(
+      ellipse 60% 80% at 85% 0%,
+      hsl(var(--primary) / 0.07),
+      transparent 70%
+    ),
+    var(--blog-hero-bg);
+  padding-top: 8rem;
+}
+
+.blog-hero-hills {
+  display: block;
+  width: 100%;
+  height: clamp(5rem, 12vw, 10rem);
+  margin-top: 1.5rem;
+  /* Overlap the page by a pixel so no seam shows under the front hill. */
+  margin-bottom: -1px;
+}
+
+.blog-hero-hill-back {
+  fill: var(--blog-hero-hill-back);
+}
+
+.blog-hero-hill-middle {
+  fill: var(--blog-hero-hill-middle);
+}
+
+.blog-hero-hill-front {
+  fill: var(--blog-bg);
+}
+
+.blog-article-body > .blog-toc {
+  display: none;
+}
+
+/* Wide screens: article column plus a sticky table of contents. */
+@media (min-width: 75rem) {
+  .blog-article-with-toc .blog-article-shell {
+    width: min(
+      100% - 2 * var(--blog-gutter),
+      calc(
+        var(--blog-prose-width) + var(--blog-toc-gap) + var(--blog-toc-width)
+      )
+    );
+  }
+
+  .blog-article-with-toc .blog-article-shell > :not(.blog-article-body) {
+    max-width: var(--blog-prose-width);
+  }
+
+  .blog-article-with-toc .blog-article-body {
+    display: grid;
+    grid-template-columns: minmax(0, var(--blog-prose-width)) var(
+        --blog-toc-width
+      );
+    column-gap: var(--blog-toc-gap);
+    align-items: start;
+  }
+
+  .blog-article-body > .blog-toc {
+    display: block;
+  }
+}
+
+.blog-article-kicker {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  color: var(--blog-text-muted);
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.75rem;
+  line-height: 1.125rem;
+}
+
+.blog-article-kicker a {
+  color: var(--blog-accent);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.blog-article-header h1 {
+  max-width: 22ch;
+  margin: 0 0 1rem;
+  color: var(--blog-text);
+  font-family: "Space Grotesk", sans-serif;
+  font-size: clamp(2.125rem, 5vw, 3rem);
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+
+.blog-article-description {
+  margin: 0 0 1.25rem;
+  color: var(--blog-text-on-surface);
+  font-size: 1.125rem;
+  line-height: 1.55;
+}
+
+.blog-article-tagline {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem 1rem;
+  margin-top: 1rem;
+}
+
+.blog-article-tagline .blog-tags {
+  margin: 0;
+}
+
+.blog-article-image {
+  margin: 0 0 3rem;
+}
+
+.blog-article-image img,
+.blog-prose img {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+  border: 1px solid var(--blog-border-strong);
+  border-radius: 0.75rem;
+}
+
+.blog-prose {
+  max-width: var(--blog-prose-width);
+  overflow-wrap: anywhere;
+  color: var(--blog-text);
+  font-family: "Inter", sans-serif;
+  font-size: 1.125rem;
+  line-height: 1.65;
+}
+
+.blog-prose > :first-child {
+  margin-top: 0;
+}
+
+.blog-prose p {
+  margin: 0 0 1.25em;
+}
+
+.blog-prose h2,
+.blog-prose h3,
+.blog-prose h4 {
+  color: var(--blog-text);
+  font-family: "Space Grotesk", sans-serif;
+  font-weight: 700;
+  scroll-margin-top: 6rem;
+}
+
+.blog-prose h2 {
+  margin: 3.5rem 0 1.25rem;
+  color: var(--blog-heading);
+  font-size: 2rem;
+  line-height: 1.2;
+}
+
+.blog-prose h3 {
+  margin: 2.5rem 0 0.875rem;
+  font-size: 1.5rem;
+  line-height: 1.3;
+}
+
+.blog-prose h4 {
+  margin: 2rem 0 0.75rem;
+  font-size: 1.25rem;
+  line-height: 1.35;
+}
+
+/* "Link to this section" anchors (added by src/lib/rehype-heading-anchors.mjs).
+   Desktop: in the left gutter, shown on hover/focus. Touch: inline, faint. */
+.blog-prose h2,
+.blog-prose h3 {
+  position: relative;
+}
+
+.blog-prose .heading-anchor {
+  position: absolute;
+  top: 0;
+  left: -2rem;
+  display: inline-flex;
+  align-items: center;
+  height: 1.2em;
+  border-radius: 0.25rem;
+  color: var(--blog-text-muted);
+  opacity: 0;
+  text-decoration: none;
+  transition:
+    opacity 150ms ease,
+    color 150ms ease;
+}
+
+.blog-prose h2:hover .heading-anchor,
+.blog-prose h3:hover .heading-anchor,
+.heading-anchor:focus-visible {
+  opacity: 1;
+}
+
+.blog-prose .heading-anchor:hover {
+  color: var(--blog-accent);
+}
+
+.heading-anchor:focus-visible {
+  outline: 2px solid var(--blog-accent);
+  outline-offset: 2px;
+}
+
+.heading-anchor[data-copied]::after {
+  content: "Copied!";
+  position: absolute;
+  bottom: calc(100% + 0.375rem);
+  left: 50%;
+  border-radius: 0.25rem;
+  background: var(--blog-accent);
+  color: hsl(var(--primary-foreground));
+  padding: 0.125rem 0.375rem;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0;
+  line-height: 1.4;
+  white-space: nowrap;
+  transform: translateX(-50%);
+}
+
+@media (hover: none), (max-width: 48rem) {
+  .blog-prose .heading-anchor {
+    position: relative;
+    left: auto;
+    margin-left: 0.375rem;
+    vertical-align: middle;
+    opacity: 0.45;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .heading-anchor {
+    transition: none;
+  }
+}
+
+.blog-prose ul,
+.blog-prose ol {
+  margin: 0 0 1.25em;
+  padding-left: 1.75rem;
+}
+
+/* Tailwind Preflight removes list markers; restore them for article lists. */
+.blog-prose ul {
+  list-style: disc;
+}
+
+.blog-prose ol {
+  list-style: decimal;
+}
+
+.blog-prose li + li {
+  margin-top: 0.5rem;
+}
+
+.blog-prose ul ul,
+.blog-prose ul ol,
+.blog-prose ol ul,
+.blog-prose ol ol {
+  margin-top: 0.5rem;
+  margin-bottom: 0;
+}
+
+.blog-prose a {
+  color: var(--blog-accent);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
+
+.blog-prose a:hover {
+  text-decoration-thickness: 2px;
+}
+
+.blog-prose strong {
+  color: var(--blog-text);
+  font-weight: 700;
+}
+
+.blog-prose em {
+  color: var(--blog-text-on-surface);
+}
+
+.blog-prose code {
+  display: inline;
+  max-width: 100%;
+  border-radius: 0.25rem;
+  background: var(--blog-code-bg);
+  color: var(--blog-accent);
+  padding: 0.125rem 0.375rem;
+  font-size: 0.85em;
+  overflow-wrap: anywhere;
+}
+
+.blog-prose pre {
+  max-width: 100%;
+  margin: 2rem 0;
+  overflow-x: auto;
+  border: 1px solid var(--blog-border-strong);
+  border-radius: 0.5rem;
+  background: var(--blog-code-bg);
+  padding: 1.25rem 1.5rem;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.9375rem;
+  line-height: 1.6;
+  overscroll-behavior-inline: contain;
+}
+
+/* A source link sits directly on top of the code block it labels. */
+.blog-prose .github-source-link + pre {
+  margin-top: 1.25rem;
+}
+
+.blog-prose pre code {
+  display: block;
+  width: max-content;
+  min-width: 100%;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  padding: 0;
+  font-size: inherit;
+  overflow-wrap: normal;
+}
+
+.blog-prose blockquote {
+  margin: 1.5rem 0;
+  border-left: 2px solid var(--blog-accent);
+  padding: 0.5rem 0 0.5rem 1.25rem;
+  color: var(--blog-text-on-surface);
+}
+
+.blog-prose blockquote p:last-child {
+  margin-bottom: 0;
+}
+
+.blog-prose hr {
+  margin: 3.5rem 0;
+  border: 0;
+  border-top: 1px solid hsl(var(--border) / 0.7);
+}
+
+.blog-prose table {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  margin: 1.5rem 0;
+  overflow-x: auto;
+  border-collapse: collapse;
+  overscroll-behavior-inline: contain;
+}
+
+.blog-prose th,
+.blog-prose td {
+  min-width: 9rem;
+  border: 1px solid var(--blog-border-strong);
+  padding: 0.5rem;
+  text-align: left;
+  vertical-align: top;
+}
+
+.blog-prose th {
+  background: var(--blog-surface-subtle);
+  color: var(--blog-text);
+  font-weight: 600;
+}
+
+.blog-prose td {
+  color: var(--blog-text);
+}
+
+.blog-prose figure {
+  margin: 2.5rem 0;
+}
+
+.blog-prose figcaption {
+  margin-top: 0.75rem;
+  color: var(--blog-text-muted);
+  font-size: 0.9375rem;
+  line-height: 1.5;
+}
+
+/* Desktop: code, callouts, and figures extend slightly past the text column. */
+@media (min-width: 64rem) {
+  .blog-prose > pre,
+  .blog-prose > aside.blog-callout,
+  .blog-prose > figure.blog-figure {
+    max-width: none;
+    margin-inline: calc(var(--blog-bleed) * -1);
+  }
+
+  .blog-prose > .github-source-link {
+    margin-left: calc(var(--blog-bleed) * -1);
+  }
+}
+
+.blog-article-nav {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+  margin-top: 4rem;
+  border-top: 1px solid var(--blog-border);
+  padding-top: 1.5rem;
+}
+
+.blog-article-nav a {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 0.375rem;
+  color: var(--blog-text);
+  text-decoration: none;
+}
+
+.blog-article-nav a:hover strong {
+  color: var(--blog-accent);
+}
+
+.blog-article-nav a span {
+  color: var(--blog-text-muted);
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.75rem;
+}
+
+.blog-article-nav strong {
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 1rem;
+  line-height: 1.35;
+}
+
+.blog-article-nav-next {
+  text-align: right;
+}
+
+@media (min-width: 768px) {
+  .blog-card {
+    padding: 1.5rem;
+  }
+
+  .blog-card-featured {
+    padding-top: calc(1.5rem - 1px);
+  }
+}
+
+@media (max-width: 480px) {
+  .blog-listing-page {
+    padding-top: 6.5rem;
+  }
+
+  .blog-article-page {
+    padding-top: 6.5rem;
+  }
+
+  .blog-article-header {
+    margin-bottom: 2.25rem;
+  }
+
+  .blog-article-description {
+    font-size: 1.0625rem;
+  }
+
+  .blog-prose {
+    line-height: 1.625;
+  }
+
+  .blog-prose h2 {
+    font-size: 1.5rem;
+  }
+
+  .blog-prose h3 {
+    font-size: 1.1875rem;
+  }
+
+  .blog-prose pre {
+    font-size: 0.875rem;
+  }
+
+  .blog-article-nav {
+    grid-template-columns: 1fr;
+  }
+
+  .blog-article-nav-next {
+    text-align: left;
   }
 }
